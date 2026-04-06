@@ -129,7 +129,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
 
   // Always show the trust dialog in interactive sessions, regardless of permission mode.
   // The trust dialog is the workspace trust boundary — it warns about untrusted repos
-  // and checks CLAUDE.md external includes. bypassPermissions mode
+  // and checks KALT_CODE.md external includes. bypassPermissions mode
   // only affects tool execution permissions, not workspace trust.
   // Note: non-interactive sessions (CI/CD with -p) never reach showSetupScreens at all.
   // Skip permission checks in claubbit
@@ -211,7 +211,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
 
   // Check for custom API key
   // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
-  // processes but ignored by Claude Code itself (see auth.ts).
+  // processes but ignored by Kalt Code itself (see auth.ts).
   if (process.env.ANTHROPIC_API_KEY && !isRunningOnHomespace()) {
     const customApiKeyTruncated = normalizeApiKeyForConfig(process.env.ANTHROPIC_API_KEY);
     const keyStatus = getCustomApiKeyStatus(customApiKeyTruncated);
@@ -325,7 +325,7 @@ export function getRenderContext(exitOnCtrlC: boolean): {
   // offline analysis by bench/repl-scroll.ts. Captures the full TUI
   // render pipeline (yoga → screen buffer → diff → optimize → stdout)
   // so perf work on any phase can be validated against real user flows.
-  const frameTimingLogPath = process.env.CLAUDE_CODE_FRAME_TIMING_LOG;
+  const frameTimingLogPath = process.env.KALT_CODE_FRAME_TIMING_LOG;
   return {
     getFpsMetrics: () => fpsTracker.getMetrics(),
     stats,

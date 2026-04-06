@@ -187,7 +187,7 @@ test('buildProfileSaveMessage maps provider fields without echoing secrets', () 
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_BASE_URL: 'https://api.openai.com/v1',
     },
-    'D:/codings/Opensource/openclaude/.openclaude-profile.json',
+    'D:/codings/Opensource/kalt-code/.kalt-code-profile.json',
   )
 
   expect(message).toContain('Saved OpenAI-compatible profile.')
@@ -204,7 +204,7 @@ test('buildProfileSaveMessage labels local openai-compatible profiles consistent
       OPENAI_MODEL: 'gpt-5.4',
       OPENAI_BASE_URL: 'http://127.0.0.1:8080/v1',
     },
-    'D:/codings/Opensource/openclaude/.openclaude-profile.json',
+    'D:/codings/Opensource/kalt-code/.kalt-code-profile.json',
   )
 
   expect(message).toContain('Saved Local OpenAI-compatible profile.')
@@ -220,7 +220,7 @@ test('buildProfileSaveMessage describes Gemini access token / ADC mode clearly',
       GEMINI_MODEL: 'gemini-2.5-flash',
       GEMINI_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/openai',
     },
-    'D:/codings/Opensource/openclaude/.openclaude-profile.json',
+    'D:/codings/Opensource/kalt-code/.kalt-code-profile.json',
   )
 
   expect(message).toContain('Saved Google Gemini profile.')
@@ -232,7 +232,7 @@ test('buildProfileSaveMessage describes Gemini access token / ADC mode clearly',
 test('buildCurrentProviderSummary redacts poisoned model and endpoint values', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      KALT_CODE_USE_OPENAI: '1',
       OPENAI_API_KEY: 'sk-secret-12345678',
       OPENAI_MODEL: 'sk-secret-12345678',
       OPENAI_BASE_URL: 'sk-secret-12345678',
@@ -248,7 +248,7 @@ test('buildCurrentProviderSummary redacts poisoned model and endpoint values', (
 test('buildCurrentProviderSummary labels generic local openai-compatible providers', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      KALT_CODE_USE_OPENAI: '1',
       OPENAI_MODEL: 'qwen2.5-coder-7b-instruct',
       OPENAI_BASE_URL: 'http://127.0.0.1:8080/v1',
     },
@@ -263,7 +263,7 @@ test('buildCurrentProviderSummary labels generic local openai-compatible provide
 test('buildCurrentProviderSummary does not relabel local gpt-5.4 providers as Codex', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      KALT_CODE_USE_OPENAI: '1',
       OPENAI_MODEL: 'gpt-5.4',
       OPENAI_BASE_URL: 'http://127.0.0.1:8080/v1',
     },

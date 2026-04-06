@@ -7,10 +7,10 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 describe('hydrateGithubModelsTokenFromSecureStorage', () => {
   const orig = {
-    CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+    KALT_CODE_USE_GITHUB: process.env.KALT_CODE_USE_GITHUB,
     GITHUB_TOKEN: process.env.GITHUB_TOKEN,
     GH_TOKEN: process.env.GH_TOKEN,
-    CLAUDE_CODE_SIMPLE: process.env.CLAUDE_CODE_SIMPLE,
+    KALT_CODE_SIMPLE: process.env.KALT_CODE_SIMPLE,
   }
 
   afterEach(() => {
@@ -25,10 +25,10 @@ describe('hydrateGithubModelsTokenFromSecureStorage', () => {
   })
 
   test('sets GITHUB_TOKEN from secure storage when USE_GITHUB and env token empty', async () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.KALT_CODE_USE_GITHUB = '1'
     delete process.env.GITHUB_TOKEN
     delete process.env.GH_TOKEN
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.KALT_CODE_SIMPLE
 
     mock.module('./secureStorage/index.js', () => ({
       getSecureStorage: () => ({
@@ -46,7 +46,7 @@ describe('hydrateGithubModelsTokenFromSecureStorage', () => {
   })
 
   test('does not override existing GITHUB_TOKEN', async () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.KALT_CODE_USE_GITHUB = '1'
     process.env.GITHUB_TOKEN = 'already'
 
     mock.module('./secureStorage/index.js', () => ({

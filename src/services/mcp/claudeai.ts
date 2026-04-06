@@ -163,12 +163,12 @@ export function clearClaudeAIMcpConfigsCache(): void {
  */
 export function markClaudeAiMcpConnected(name: string): void {
   saveGlobalConfig(current => {
-    const seen = current.claudeAiMcpEverConnected ?? []
+    const seen = current.kalt-codeAiMcpEverConnected ?? []
     if (seen.includes(name)) return current
     return { ...current, claudeAiMcpEverConnected: [...seen, name] }
   })
 }
 
 export function hasClaudeAiMcpEverConnected(name: string): boolean {
-  return (getGlobalConfig().claudeAiMcpEverConnected ?? []).includes(name)
+  return (getGlobalConfig().kalt-codeAiMcpEverConnected ?? []).includes(name)
 }

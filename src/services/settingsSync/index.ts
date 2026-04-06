@@ -1,7 +1,7 @@
 /**
  * Settings Sync Service
  *
- * Syncs user settings and memory files across Claude Code environments.
+ * Syncs user settings and memory files across Kalt Code environments.
  *
  * - Interactive CLI: Uploads local settings to remote (incremental, only changed entries)
  * - CCR: Downloads remote settings to local before plugin installation
@@ -16,7 +16,7 @@ import pickBy from 'lodash-es/pickBy.js'
 import { dirname } from 'path'
 import { getIsInteractive } from '../../bootstrap/state.js'
 import {
-  CLAUDE_AI_INFERENCE_SCOPE,
+  KALT_CODE_AI_INFERENCE_SCOPE,
   getOauthConfig,
   OAUTH_BETA_HEADER,
 } from '../../constants/oauth.js'
@@ -216,7 +216,7 @@ function isUsingOAuth(): boolean {
 
   const tokens = getClaudeAIOAuthTokens()
   return Boolean(
-    tokens?.accessToken && tokens.scopes?.includes(CLAUDE_AI_INFERENCE_SCOPE),
+    tokens?.accessToken && tokens.scopes?.includes(KALT_CODE_AI_INFERENCE_SCOPE),
   )
 }
 
@@ -483,7 +483,7 @@ async function writeFileForSync(
  *
  * After writing, invalidates relevant caches:
  * - resetSettingsCache() for settings files
- * - clearMemoryFileCaches() for memory files (CLAUDE.md)
+ * - clearMemoryFileCaches() for memory files (KALT_CODE.md)
  */
 async function applyRemoteEntriesToLocal(
   entries: Record<string, string>,

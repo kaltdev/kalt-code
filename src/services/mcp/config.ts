@@ -195,7 +195,7 @@ export function unwrapCcrProxyUrl(url: string): string {
 /**
  * Compute a dedup signature for an MCP server config.
  * Two configs with the same signature are considered "the same server" for
- * plugin deduplication. Ignores env (plugins always inject CLAUDE_PLUGIN_ROOT)
+ * plugin deduplication. Ignores env (plugins always inject KALT_CODE_PLUGIN_ROOT)
  * and headers (same URL = same server regardless of auth).
  * Returns null only for configs with neither command nor url (sdk type).
  */
@@ -268,7 +268,7 @@ export function dedupPluginMcpServers(
 /**
  * Filter claude.ai connectors, dropping any whose signature matches an enabled
  * manually-configured server. Manual wins: a user who wrote .mcp.json or ran
- * `claude mcp add` expressed higher intent than a connector toggled in the web UI.
+ * `kalt-code mcp add` expressed higher intent than a connector toggled in the web UI.
  *
  * Connector keys are `claude.ai <DisplayName>` so they never key-collide with
  * manual servers in the merge — this content-based check catches the case where
@@ -1060,13 +1060,13 @@ export function getMcpConfigByName(name: string): ScopedMcpServerConfig | null {
 }
 
 /**
- * Get Claude Code MCP configurations (excludes claude.ai servers from the
+ * Get Kalt Code MCP configurations (excludes claude.ai servers from the
  * returned set — they're fetched separately and merged by callers).
  * This is fast: only local file reads; no awaited network calls on the
  * critical path. The optional extraDedupTargets promise (e.g. the in-flight
  * claude.ai connector fetch) is awaited only after loadAllPluginsCacheOnly() completes,
  * so the two overlap rather than serialize.
- * @returns Claude Code server configurations with appropriate scopes
+ * @returns Kalt Code server configurations with appropriate scopes
  */
 export async function getClaudeCodeMcpConfigs(
   dynamicServers: Record<string, ScopedMcpServerConfig> = {},
@@ -1359,7 +1359,7 @@ export function parseMcpConfig(params: {
         ...(filePath && { file: filePath }),
         path: `mcpServers.${name}`,
         message: `Windows requires 'cmd /c' wrapper to execute npx`,
-        suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers`,
+        suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.kalt-code.com/docs/en/mcp#configure-mcp-servers`,
         mcpErrorMetadata: {
           scope,
           serverName: name,
@@ -1495,11 +1495,11 @@ export function areMcpConfigsAllowedWithEnterpriseMcpConfig(
   configs: Record<string, ScopedMcpServerConfig>,
 ): boolean {
   // NOTE: While all SDK MCP servers should be safe from a security perspective, we are still discussing
-  // what the best way to do this is. In the meantime, we are limiting this to claude-vscode for now to
+  // what the best way to do this is. In the meantime, we are limiting this to kalt-code-vscode for now to
   // unbreak the VSCode extension for certain enterprise customers who have enterprise MCP config enabled.
   // https://anthropic.slack.com/archives/C093UA0KLD7/p1764975463670109
   return Object.values(configs).every(
-    c => c.type === 'sdk' && c.name === 'claude-vscode',
+    c => c.type === 'sdk' && c.name === 'kalt-code-vscode',
   )
 }
 

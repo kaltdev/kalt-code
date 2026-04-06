@@ -28,8 +28,8 @@ function isDevMode(): boolean {
 }
 
 /**
- * Builds a deep link URL for Claude Desktop to resume a CLI session.
- * Format: claude://resume?session={sessionId}&cwd={cwd}
+ * Builds a deep link URL for Kalt Code Desktop to resume a CLI session.
+ * Format: kalt-code://resume?session={sessionId}&cwd={cwd}
  * In dev mode: claude-dev://resume?session={sessionId}&cwd={cwd}
  */
 function buildDesktopDeepLink(sessionId: string): string {
@@ -41,9 +41,9 @@ function buildDesktopDeepLink(sessionId: string): string {
 }
 
 /**
- * Check if Claude Desktop app is installed.
+ * Check if Kalt Code Desktop app is installed.
  * On macOS, checks for /Applications/Claude.app.
- * On Linux, checks if xdg-open can handle claude:// protocol.
+ * On Linux, checks if xdg-open can handle kalt-code:// protocol.
  * On Windows, checks if the protocol handler exists.
  * In dev mode, always returns true (assumes dev Desktop is running).
  */
@@ -59,7 +59,7 @@ async function isDesktopInstalled(): Promise<boolean> {
     // Check for Claude.app in /Applications
     return pathExists('/Applications/Claude.app')
   } else if (platform === 'linux') {
-    // Check if xdg-mime can find a handler for claude://
+    // Check if xdg-mime can find a handler for kalt-code://
     // Note: xdg-mime returns exit code 0 even with no handler, so check stdout too
     const { code, stdout } = await execFileNoThrow('xdg-mime', [
       'query',
@@ -81,7 +81,7 @@ async function isDesktopInstalled(): Promise<boolean> {
 }
 
 /**
- * Detect the installed Claude Desktop version.
+ * Detect the installed Kalt Code Desktop version.
  * On macOS, reads CFBundleShortVersionString from the app plist.
  * On Windows, finds the highest app-X.Y.Z directory in the Squirrel install.
  * Returns null if version cannot be determined.
@@ -200,7 +200,7 @@ async function openDeepLink(deepLinkUrl: string): Promise<boolean> {
 }
 
 /**
- * Build and open a deep link to resume the current session in Claude Desktop.
+ * Build and open a deep link to resume the current session in Kalt Code Desktop.
  * Returns an object with success status and any error message.
  */
 export async function openCurrentSessionInDesktop(): Promise<{
@@ -216,7 +216,7 @@ export async function openCurrentSessionInDesktop(): Promise<{
     return {
       success: false,
       error:
-        'Claude Desktop is not installed. Install it from https://claude.ai/download',
+        'Kalt Code Desktop is not installed. Install it from https://claude.ai/download',
     }
   }
 
@@ -227,7 +227,7 @@ export async function openCurrentSessionInDesktop(): Promise<{
   if (!opened) {
     return {
       success: false,
-      error: 'Failed to open Claude Desktop. Please try opening it manually.',
+      error: 'Failed to open Kalt Code Desktop. Please try opening it manually.',
       deepLinkUrl,
     }
   }

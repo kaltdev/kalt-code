@@ -1,0 +1,129 @@
+{
+  "name": "kalt-code-vscode",
+  "displayName": "Kalt Code",
+  "description": "Practical VS Code companion for Kalt Code with project-aware launch behavior and a real Control Center.",
+  "version": "0.1.1",
+  "publisher": "kaltdev",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Themes",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:kalt-code.start",
+    "onCommand:kalt-code.startInWorkspaceRoot",
+    "onCommand:kalt-code.openDocs",
+    "onCommand:kalt-code.openSetupDocs",
+    "onCommand:kalt-code.openWorkspaceProfile",
+    "onCommand:kalt-code.openControlCenter",
+    "onView:kalt-code.controlCenter"
+  ],
+  "main": "./src/extension.js",
+  "files": [
+    "README.md",
+    "media/**",
+    "src/extension.js",
+    "src/presentation.js",
+    "src/state.js",
+    "themes/**"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "kalt-code.start",
+        "title": "Kalt Code: Launch in Terminal",
+        "category": "Kalt Code"
+      },
+      {
+        "command": "kalt-code.startInWorkspaceRoot",
+        "title": "Kalt Code: Launch in Workspace Root",
+        "category": "Kalt Code"
+      },
+      {
+        "command": "kalt-code.openDocs",
+        "title": "Kalt Code: Open Repository",
+        "category": "Kalt Code"
+      },
+      {
+        "command": "kalt-code.openSetupDocs",
+        "title": "Kalt Code: Open Setup Guide",
+        "category": "Kalt Code"
+      },
+      {
+        "command": "kalt-code.openWorkspaceProfile",
+        "title": "Kalt Code: Open Workspace Profile",
+        "category": "Kalt Code"
+      },
+      {
+        "command": "kalt-code.openControlCenter",
+        "title": "Kalt Code: Open Control Center",
+        "category": "Kalt Code"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "kalt-code",
+          "title": "Kalt Code",
+          "icon": "media/kalt-code.svg"
+        }
+      ]
+    },
+    "views": {
+      "kalt-code": [
+        {
+          "id": "kalt-code.controlCenter",
+          "name": "Control Center",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Kalt Code",
+      "properties": {
+        "kalt-code.launchCommand": {
+          "type": "string",
+          "default": "kalt-code",
+          "description": "Command run in the integrated terminal when launching Kalt Code."
+        },
+        "kalt-code.terminalName": {
+          "type": "string",
+          "default": "Kalt Code",
+          "description": "Integrated terminal tab name for Kalt Code sessions."
+        },
+        "kalt-code.useOpenAIShim": {
+          "type": "boolean",
+          "default": false,
+          "description": "Optionally set CLAUDE_CODE_USE_OPENAI=1 in launched Kalt Code terminals."
+        }
+      }
+    },
+    "themes": [
+      {
+        "label": "Kalt Code Terminal Black",
+        "uiTheme": "vs-dark",
+        "path": "./themes/Kalt-Code-Terminal-Black.json"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test ./src/*.test.js",
+    "lint": "node -e \"for (const file of require('node:fs').readdirSync('./src')) { if (file.endsWith('.js')) { require('node:child_process').execFileSync(process.execPath, ['--check', require('node:path').join('src', file)], { stdio: 'inherit' }); } }\"",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "keywords": [
+    "kalt-code",
+    "terminal",
+    "theme",
+    "cli",
+    "llm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaltdev/kalt-code"
+  },
+  "license": "MIT"
+}

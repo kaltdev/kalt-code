@@ -21,7 +21,7 @@ BANNED=(
   "tengu_internal_record_permission_context"
   "anthropic-serve"
   "infra.ant.dev"
-  "claude-code-feedback"
+  "kalt-code-feedback"
   "C07VBSHV7EV"
 )
 

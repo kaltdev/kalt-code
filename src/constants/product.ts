@@ -1,9 +1,9 @@
-export const PRODUCT_URL = 'https://claude.com/claude-code'
+export const PRODUCT_URL = 'https://claude.com/kalt-code'
 
-// Claude Code Remote session URLs
-export const CLAUDE_AI_BASE_URL = 'https://claude.ai'
-export const CLAUDE_AI_STAGING_BASE_URL = 'https://claude-ai.staging.ant.dev'
-export const CLAUDE_AI_LOCAL_BASE_URL = 'http://localhost:4000'
+// Kalt Code Remote session URLs
+export const KALT_CODE_AI_BASE_URL = 'https://claude.ai'
+export const KALT_CODE_AI_STAGING_BASE_URL = 'https://claude-ai.staging.ant.dev'
+export const KALT_CODE_AI_LOCAL_BASE_URL = 'http://localhost:4000'
 
 /**
  * Determine if we're in a staging environment for remote sessions.
@@ -41,12 +41,12 @@ export function getClaudeAiBaseUrl(
   ingressUrl?: string,
 ): string {
   if (isRemoteSessionLocal(sessionId, ingressUrl)) {
-    return CLAUDE_AI_LOCAL_BASE_URL
+    return KALT_CODE_AI_LOCAL_BASE_URL
   }
   if (isRemoteSessionStaging(sessionId, ingressUrl)) {
-    return CLAUDE_AI_STAGING_BASE_URL
+    return KALT_CODE_AI_STAGING_BASE_URL
   }
-  return CLAUDE_AI_BASE_URL
+  return KALT_CODE_AI_BASE_URL
 }
 
 /**

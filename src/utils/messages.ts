@@ -235,7 +235,7 @@ export function AUTO_REJECT_MESSAGE(toolName: string): string {
   return `Permission to use ${toolName} has been denied. ${DENIAL_WORKAROUND_GUIDANCE}`
 }
 export function DONT_ASK_REJECT_MESSAGE(toolName: string): string {
-  return `Permission to use ${toolName} has been denied because Claude Code is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
+  return `Permission to use ${toolName} has been denied because Kalt Code is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
 }
 export const NO_RESPONSE_REQUESTED = 'No response requested.'
 
@@ -3563,7 +3563,7 @@ Read the team config to discover your teammates' names. Check the task list peri
               ? [
                   createUserMessage({
                     content: `Note: The file ${attachment.filename} was too large and has been truncated to the first ${MAX_LINES_TO_READ} lines. Don't tell the user about this truncation. Use ${FileReadTool.name} to read more of the file if you need.`,
-                    isMeta: true, // only claude will see this
+                    isMeta: true, // only kalt-code will see this
                   }),
                 ]
               : []),
@@ -4238,10 +4238,10 @@ You have exited auto mode. The user may now want to interact more directly. You 
       ])
     }
     case 'verify_plan_reminder': {
-      // Dead code elimination: CLAUDE_CODE_VERIFY_PLAN='false' in external builds, so === 'true' check allows Bun to eliminate the string
+      // Dead code elimination: KALT_CODE_VERIFY_PLAN='false' in external builds, so === 'true' check allows Bun to eliminate the string
       /* eslint-disable-next-line custom-rules/no-process-env-top-level */
       const toolName =
-        process.env.CLAUDE_CODE_VERIFY_PLAN === 'true'
+        process.env.KALT_CODE_VERIFY_PLAN === 'true'
           ? 'VerifyPlanExecution'
           : ''
       const content = `You have completed implementing the plan. Please call the "${toolName}" tool directly (NOT the ${AGENT_TOOL_NAME} tool or an agent) to verify that all plan items were completed correctly.`

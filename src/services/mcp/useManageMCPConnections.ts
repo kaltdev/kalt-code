@@ -467,7 +467,7 @@ export function useManageMCPConnections(
             }
           }
 
-          // Channel push: notifications/claude/channel → enqueue().
+          // Channel push: notifications/kalt-code/channel → enqueue().
           // Gate decides whether to register the handler; connection stays
           // up either way (allowedMcpServers controls that).
           if (feature('KAIROS') || feature('KAIROS_CHANNELS')) {
@@ -510,7 +510,7 @@ export function useManageMCPConnections(
                     const { content, meta } = notification.params
                     logMCPDebug(
                       client.name,
-                      `notifications/claude/channel: ${content.slice(0, 80)}`,
+                      `notifications/kalt-code/channel: ${content.slice(0, 80)}`,
                     )
                     logEvent('tengu_mcp_channel_message', {
                       content_length: content.length,
@@ -532,13 +532,13 @@ export function useManageMCPConnections(
                 )
                 // Permission-reply handler — separate event, separate
                 // capability. Only registers if the server declares
-                // claude/channel/permission (same opt-in check as the send
+                // kalt-code/channel/permission (same opt-in check as the send
                 // path in interactiveHandler.ts). Server parses the user's
                 // reply and emits {request_id, behavior}; no regex on our
                 // side, text in the general channel can't accidentally match.
                 if (
                   client.capabilities?.experimental?.[
-                    'claude/channel/permission'
+                    'kalt-code/channel/permission'
                   ] !== undefined
                 ) {
                   client.client.setNotificationHandler(
@@ -553,7 +553,7 @@ export function useManageMCPConnections(
                         ) ?? false
                       logMCPDebug(
                         client.name,
-                        `notifications/claude/channel/permission: ${request_id} → ${behavior} (${resolved ? 'matched pending' : 'no pending entry — stale or unknown ID'})`,
+                        `notifications/kalt-code/channel/permission: ${request_id} → ${behavior} (${resolved ? 'matched pending' : 'no pending entry — stale or unknown ID'})`,
                       )
                     },
                   )
@@ -566,7 +566,7 @@ export function useManageMCPConnections(
                 // the gate says skip but the earlier handler keeps enqueuing.
                 // Map.delete — safe when never registered.
                 client.client.removeNotificationHandler(
-                  'notifications/claude/channel',
+                  'notifications/kalt-code/channel',
                 )
                 client.client.removeNotificationHandler(
                   CHANNEL_PERMISSION_METHOD,
@@ -854,7 +854,7 @@ export function useManageMCPConnections(
   ])
 
   // Load MCP configs and connect to servers
-  // Two-phase loading: Claude Code configs first (fast), then claude.ai configs (may be slow)
+  // Two-phase loading: Kalt Code configs first (fast), then claude.ai configs (may be slow)
   useEffect(() => {
     let cancelled = false
 
@@ -872,7 +872,7 @@ export function useManageMCPConnections(
         claudeaiPromise = fetchClaudeAIMcpConfigsIfEligible()
       }
 
-      // Phase 1: Load Claude Code configs. Plugin MCP servers that duplicate a
+      // Phase 1: Load Kalt Code configs. Plugin MCP servers that duplicate a
       // --mcp-config entry or a claude.ai connector are suppressed here so they
       // don't connect alongside the connector in Phase 2.
       const { servers: claudeCodeConfigs, errors: mcpErrors } =
@@ -884,9 +884,9 @@ export function useManageMCPConnections(
       // Add MCP errors to plugin errors for UI visibility (deduplicated)
       addErrorsToAppState(setAppState, mcpErrors)
 
-      const configs = { ...claudeCodeConfigs, ...dynamicMcpConfig }
+      const configs = { ...kalt-codeCodeConfigs, ...dynamicMcpConfig }
 
-      // Start connecting to Claude Code servers (don't wait - runs concurrently with Phase 2)
+      // Start connecting to Kalt Code servers (don't wait - runs concurrently with Phase 2)
       // Filter out disabled servers to avoid unnecessary connection attempts
       const enabledConfigs = Object.fromEntries(
         Object.entries(configs).filter(([name]) => !isMcpServerDisabled(name)),

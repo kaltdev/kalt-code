@@ -14,16 +14,16 @@ import { getAPIProvider } from './model/providers.js'
 import { getClaudeCodeUserAgent } from './userAgent.js'
 import { getWorkload } from './workloadContext.js'
 
-// WARNING: We rely on `claude-cli` in the user agent for log filtering.
+// WARNING: We rely on `kalt-code` in the user agent for log filtering.
 // Please do NOT change this without making sure that logging also gets updated!
 export function getUserAgent(): string {
-  const agentSdkVersion = process.env.CLAUDE_AGENT_SDK_VERSION
-    ? `, agent-sdk/${process.env.CLAUDE_AGENT_SDK_VERSION}`
+  const agentSdkVersion = process.env.KALT_CODE_AGENT_SDK_VERSION
+    ? `, agent-sdk/${process.env.KALT_CODE_AGENT_SDK_VERSION}`
     : ''
-  // SDK consumers can identify their app/library via CLAUDE_AGENT_SDK_CLIENT_APP
+  // SDK consumers can identify their app/library via KALT_CODE_AGENT_SDK_CLIENT_APP
   // e.g., "my-app/1.0.0" or "my-library/2.1"
-  const clientApp = process.env.CLAUDE_AGENT_SDK_CLIENT_APP
-    ? `, client-app/${process.env.CLAUDE_AGENT_SDK_CLIENT_APP}`
+  const clientApp = process.env.KALT_CODE_AGENT_SDK_CLIENT_APP
+    ? `, client-app/${process.env.KALT_CODE_AGENT_SDK_CLIENT_APP}`
     : ''
   // Turn-/process-scoped workload tag for cron-initiated requests. 1P-only
   // observability — proxies strip HTTP headers; QoS routing uses cc_workload
@@ -32,33 +32,33 @@ export function getUserAgent(): string {
   // so the read picks up the same setWorkload() value as getAttributionHeader.
   const workload = getWorkload()
   const workloadSuffix = workload ? `, workload/${workload}` : ''
-  return `claude-cli/${MACRO.VERSION} (${process.env.USER_TYPE}, ${process.env.CLAUDE_CODE_ENTRYPOINT ?? 'cli'}${agentSdkVersion}${clientApp}${workloadSuffix})`
+  return `kalt-code/${MACRO.VERSION} (${process.env.USER_TYPE}, ${process.env.KALT_CODE_ENTRYPOINT ?? 'cli'}${agentSdkVersion}${clientApp}${workloadSuffix})`
 }
 
 export function getMCPUserAgent(): string {
   const parts: string[] = []
-  if (process.env.CLAUDE_CODE_ENTRYPOINT) {
-    parts.push(process.env.CLAUDE_CODE_ENTRYPOINT)
+  if (process.env.KALT_CODE_ENTRYPOINT) {
+    parts.push(process.env.KALT_CODE_ENTRYPOINT)
   }
-  if (process.env.CLAUDE_AGENT_SDK_VERSION) {
-    parts.push(`agent-sdk/${process.env.CLAUDE_AGENT_SDK_VERSION}`)
+  if (process.env.KALT_CODE_AGENT_SDK_VERSION) {
+    parts.push(`agent-sdk/${process.env.KALT_CODE_AGENT_SDK_VERSION}`)
   }
-  if (process.env.CLAUDE_AGENT_SDK_CLIENT_APP) {
-    parts.push(`client-app/${process.env.CLAUDE_AGENT_SDK_CLIENT_APP}`)
+  if (process.env.KALT_CODE_AGENT_SDK_CLIENT_APP) {
+    parts.push(`client-app/${process.env.KALT_CODE_AGENT_SDK_CLIENT_APP}`)
   }
   const suffix = parts.length > 0 ? ` (${parts.join(', ')})` : ''
-  return `claude-code/${MACRO.VERSION}${suffix}`
+  return `kalt-code/${MACRO.VERSION}${suffix}`
 }
 
 // User-Agent for WebFetch requests to arbitrary sites. `Claude-User` is
 // The first-party provider's publicly documented agent for user-initiated fetches (what site
-// operators match in robots.txt); the claude-code suffix lets them distinguish
+// operators match in robots.txt); the kalt-code suffix lets them distinguish
 // local CLI traffic from claude.ai server-side fetches.
 export function getWebFetchUserAgent(): string {
   const supportUrl =
     getAPIProvider() === 'firstParty'
       ? 'https://support.anthropic.com/'
-      : 'https://github.com/Gitlawb/openclaude'
+      : 'https://github.com/kaltdev/kalt-code'
   return `Claude-User (${getClaudeCodeUserAgent()}; +${supportUrl})`
 }
 

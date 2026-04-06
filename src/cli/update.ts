@@ -31,7 +31,7 @@ import { getInitialSettings } from 'src/utils/settings/settings.js'
 export async function update() {
   // Block updates for third-party providers. The update mechanism downloads
   // from the first-party distribution bucket, which would silently replace the
-  // OpenClaude build (with the OpenAI shim) with the upstream Claude Code
+  // Kalt Code build (with the OpenAI shim) with the upstream Kalt Code
   // binary (without it).
   if (getAPIProvider() !== 'firstParty') {
     writeToStdout(
@@ -140,7 +140,7 @@ export async function update() {
         writeToStdout(`Update available: ${MACRO.VERSION} → ${latest}\n`)
         writeToStdout('\n')
         writeToStdout('To update, run:\n')
-        writeToStdout(chalk.bold('  brew upgrade claude-code') + '\n')
+        writeToStdout(chalk.bold('  brew upgrade kalt-code') + '\n')
       } else {
         writeToStdout('Claude is up to date!\n')
       }
@@ -164,7 +164,7 @@ export async function update() {
         writeToStdout(`Update available: ${MACRO.VERSION} → ${latest}\n`)
         writeToStdout('\n')
         writeToStdout('To update, run:\n')
-        writeToStdout(chalk.bold('  apk upgrade claude-code') + '\n')
+        writeToStdout(chalk.bold('  apk upgrade kalt-code') + '\n')
       } else {
         writeToStdout('Claude is up to date!\n')
       }
@@ -252,7 +252,7 @@ export async function update() {
 
       if (result.latestVersion === MACRO.VERSION) {
         writeToStdout(
-          chalk.green(`Claude Code is up to date (${MACRO.VERSION})`) + '\n',
+          chalk.green(`Kalt Code is up to date (${MACRO.VERSION})`) + '\n',
         )
       } else {
         writeToStdout(
@@ -266,7 +266,7 @@ export async function update() {
     } catch (error) {
       process.stderr.write('Error: Failed to install native update\n')
       process.stderr.write(String(error) + '\n')
-      process.stderr.write('Try running "claude doctor" for diagnostics\n')
+      process.stderr.write('Try running "kalt-code doctor" for diagnostics\n')
       await gracefulShutdown(1)
     }
   }
@@ -309,8 +309,8 @@ export async function update() {
     const packageName =
       MACRO.PACKAGE_URL ||
       (process.env.USER_TYPE === 'ant'
-        ? '@anthropic-ai/claude-cli'
-        : '@anthropic-ai/claude-code')
+        ? '@anthropic-ai/kalt-code'
+        : '@anthropic-ai/kalt-code')
     process.stderr.write(
       `  • Manually check: npm view ${packageName} version\n`,
     )
@@ -322,7 +322,7 @@ export async function update() {
   // Check if versions match exactly, including any build metadata (like SHA)
   if (latestVersion === MACRO.VERSION) {
     writeToStdout(
-      chalk.green(`Claude Code is up to date (${MACRO.VERSION})`) + '\n',
+      chalk.green(`Kalt Code is up to date (${MACRO.VERSION})`) + '\n',
     )
     await gracefulShutdown(0)
   }
@@ -400,12 +400,12 @@ export async function update() {
       if (useLocalUpdate) {
         process.stderr.write('Try manually updating with:\n')
         process.stderr.write(
-          `  cd ~/.claude/local && npm update ${MACRO.PACKAGE_URL}\n`,
+          `  cd ~/.kalt-code/local && npm update ${MACRO.PACKAGE_URL}\n`,
         )
       } else {
         process.stderr.write('Try running with sudo or fix npm permissions\n')
         process.stderr.write(
-          'Or consider using native installation with: claude install\n',
+          'Or consider using native installation with: kalt-code install\n',
         )
       }
       await gracefulShutdown(1)
@@ -415,11 +415,11 @@ export async function update() {
       if (useLocalUpdate) {
         process.stderr.write('Try manually updating with:\n')
         process.stderr.write(
-          `  cd ~/.claude/local && npm update ${MACRO.PACKAGE_URL}\n`,
+          `  cd ~/.kalt-code/local && npm update ${MACRO.PACKAGE_URL}\n`,
         )
       } else {
         process.stderr.write(
-          'Or consider using native installation with: claude install\n',
+          'Or consider using native installation with: kalt-code install\n',
         )
       }
       await gracefulShutdown(1)

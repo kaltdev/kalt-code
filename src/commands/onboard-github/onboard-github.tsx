@@ -27,13 +27,13 @@ type Step =
 function mergeUserSettingsEnv(model: string): { ok: boolean; detail?: string } {
   const { error } = updateSettingsForSource('userSettings', {
     env: {
-      CLAUDE_CODE_USE_GITHUB: '1',
+      KALT_CODE_USE_GITHUB: '1',
       OPENAI_MODEL: model,
-      CLAUDE_CODE_USE_OPENAI: undefined as any,
-      CLAUDE_CODE_USE_GEMINI: undefined as any,
-      CLAUDE_CODE_USE_BEDROCK: undefined as any,
-      CLAUDE_CODE_USE_VERTEX: undefined as any,
-      CLAUDE_CODE_USE_FOUNDRY: undefined as any,
+      KALT_CODE_USE_OPENAI: undefined as any,
+      KALT_CODE_USE_GEMINI: undefined as any,
+      KALT_CODE_USE_BEDROCK: undefined as any,
+      KALT_CODE_USE_VERTEX: undefined as any,
+      KALT_CODE_USE_FOUNDRY: undefined as any,
     },
   })
   if (error) {
@@ -68,12 +68,12 @@ function OnboardGithub(props: {
       if (!merged.ok) {
         setErrorMsg(
           `Token saved, but settings were not updated: ${merged.detail ?? 'unknown error'}. ` +
-            `Add env CLAUDE_CODE_USE_GITHUB=1 and OPENAI_MODEL to ~/.claude/settings.json manually.`,
+            `Add env KALT_CODE_USE_GITHUB=1 and OPENAI_MODEL to ~/.kalt-code/settings.json manually.`,
         )
         setStep('error')
         return
       }
-      process.env.CLAUDE_CODE_USE_GITHUB = '1'
+      process.env.KALT_CODE_USE_GITHUB = '1'
       process.env.OPENAI_MODEL = model.trim() || DEFAULT_MODEL
       hydrateGithubModelsTokenFromSecureStorage()
       onChangeAPIKey()
@@ -206,7 +206,7 @@ function OnboardGithub(props: {
       <Text bold>GitHub Models setup</Text>
       <Text dimColor>
         Stores your token in the OS credential store (macOS Keychain when available)
-        and enables CLAUDE_CODE_USE_GITHUB in your user settings — no export
+        and enables KALT_CODE_USE_GITHUB in your user settings — no export
         GITHUB_TOKEN needed for future runs.
       </Text>
       <Select

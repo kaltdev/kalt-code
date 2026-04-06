@@ -86,9 +86,9 @@ export const getCoreUserData = memoize(
     if (includeAnalyticsMetadata) {
       subscriptionType = getSubscriptionType() ?? undefined
       rateLimitTier = getRateLimitTier() ?? undefined
-      if (subscriptionType && config.claudeCodeFirstTokenDate) {
+      if (subscriptionType && config.kalt-codeCodeFirstTokenDate) {
         const configFirstTokenTime = new Date(
-          config.claudeCodeFirstTokenDate,
+          config.kalt-codeCodeFirstTokenDate,
         ).getTime()
         if (!isNaN(configFirstTokenTime)) {
           firstTokenTime = configFirstTokenTime

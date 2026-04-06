@@ -8,11 +8,11 @@
 import { homedir, userInfo } from 'os'
 import { join } from 'path'
 
-/** macOS preference domain for Claude Code MDM profiles. */
-export const MACOS_PREFERENCE_DOMAIN = 'com.anthropic.claudecode'
+/** macOS preference domain for Kalt Code MDM profiles. */
+export const MACOS_PREFERENCE_DOMAIN = 'com.anthropic.kalt-codecode'
 
 /**
- * Windows registry key paths for Claude Code MDM policies.
+ * Windows registry key paths for Kalt Code MDM policies.
  *
  * These keys live under SOFTWARE\Policies which is on the WOW64 shared key
  * list — both 32-bit and 64-bit processes see the same values without

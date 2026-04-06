@@ -109,12 +109,12 @@ function pollSleepDetectionThresholdMs(backoff: BackoffConfig): number {
 }
 
 /**
- * Returns the args that must precede CLI flags when spawning a child claude
- * process. In compiled binaries, process.execPath is the claude binary itself
+ * Returns the args that must precede CLI flags when spawning a child kalt-code
+ * process. In compiled binaries, process.execPath is the kalt-code binary itself
  * and args go directly to it. In npm installs (node running cli.js),
  * process.execPath is the node runtime — the child spawn must pass the script
  * path as the first arg, otherwise node interprets --sdk-url as a node option
- * and exits with "bad option: --sdk-url". See anthropics/claude-code#28334.
+ * and exits with "bad option: --sdk-url". See anthropics/kalt-code#28334.
  */
 function spawnScriptArgs(): string[] {
   if (isInBundledMode() || !process.argv[1]) {
@@ -913,7 +913,7 @@ export async function runBridgeLoop(
           // ant-dev override (e.g. forcing v2 before the server flag is on).
           if (
             secret.use_code_sessions === true ||
-            isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+            isEnvTruthy(process.env.KALT_CODE_BRIDGE_USE_CCR_V2)
           ) {
             sdkUrl = buildCCRv2SdkUrl(config.apiBaseUrl, sessionId)
             // Retry once on transient failure (network blip, 500) before
@@ -1513,7 +1513,7 @@ export async function runBridgeLoop(
   }
 
   // In single-session mode with a known session, leave the session and
-  // environment alive so `claude remote-control --session-id=<id>` can resume.
+  // environment alive so `kalt-code remote-control --session-id=<id>` can resume.
   // The backend GCs stale environments via a 4h TTL (BRIDGE_LAST_POLL_TTL).
   // Archiving the session or deregistering the environment would make the
   // printed resume command a lie — deregister deletes Firestore + Redis stream.
@@ -1529,7 +1529,7 @@ export async function runBridgeLoop(
     !fatalExit
   ) {
     logger.logStatus(
-      `Resume this session by running \`claude remote-control --continue\``,
+      `Resume this session by running \`kalt-code remote-control --continue\``,
     )
     logForDebugging(
       `[bridge:shutdown] Skipping archive+deregister to allow resume of session ${initialSessionId}`,
@@ -1820,7 +1820,7 @@ export function parseArgs(args: string[]): ParsedArgs {
       createSessionInDir = false
     } else {
       return makeError(
-        `Unknown argument: ${arg}\nRun 'claude remote-control --help' for usage.`,
+        `Unknown argument: ${arg}\nRun 'kalt-code remote-control --help' for usage.`,
       )
     }
   }
@@ -1921,7 +1921,7 @@ async function printHelp(): Promise<void> {
 Remote Control - Connect your local environment to claude.ai/code
 
 USAGE
-  claude remote-control [options]
+  kalt-code remote-control [options]
 OPTIONS
   --name <name>                    Name for the session (shown in claude.ai/code)
 ${
@@ -2154,7 +2154,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
     if (!found) {
       // biome-ignore lint/suspicious/noConsole: intentional error output
       console.error(
-        `Error: No recent session found in this directory or its worktrees. Run \`claude remote-control\` to start a new one.`,
+        `Error: No recent session found in this directory or its worktrees. Run \`kalt-code remote-control\` to start a new one.`,
       )
       // eslint-disable-next-line custom-rules/no-process-exit
       process.exit(1)
@@ -2175,7 +2175,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
   }
 
   // In production, baseUrl is the Anthropic API (from OAuth config).
-  // CLAUDE_BRIDGE_BASE_URL overrides this for ant local dev only.
+  // KALT_CODE_BRIDGE_BASE_URL overrides this for ant local dev only.
   const baseUrl = getBridgeBaseUrl()
 
   // For non-localhost targets, require HTTPS to protect credentials.
@@ -2195,12 +2195,12 @@ export async function bridgeMain(args: string[]): Promise<void> {
   // Session ingress URL for WebSocket connections. In production this is the
   // same as baseUrl (Envoy routes /v1/session_ingress/* to session-ingress).
   // Locally, session-ingress runs on a different port (9413) than the
-  // contain-provide-api (8211), so CLAUDE_BRIDGE_SESSION_INGRESS_URL must be
-  // set explicitly. Ant-only, matching CLAUDE_BRIDGE_BASE_URL.
+  // contain-provide-api (8211), so KALT_CODE_BRIDGE_SESSION_INGRESS_URL must be
+  // set explicitly. Ant-only, matching KALT_CODE_BRIDGE_BASE_URL.
   const sessionIngressUrl =
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
+    process.env.KALT_CODE_BRIDGE_SESSION_INGRESS_URL
+      ? process.env.KALT_CODE_BRIDGE_SESSION_INGRESS_URL
       : baseUrl
 
   const { getBranch, getRemoteUrl, findGitRoot } = await import(
@@ -2252,7 +2252,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
     })
     // biome-ignore lint/suspicious/noConsole: intentional dialog output
     console.log(
-      `\nClaude Remote Control is launching in spawn mode which lets you create new sessions in this project from Claude Code on Web or your Mobile app. Learn more here: https://code.claude.com/docs/en/remote-control\n\n` +
+      `\nClaude Remote Control is launching in spawn mode which lets you create new sessions in this project from Kalt Code on Web or your Mobile app. Learn more here: https://code.kalt-code.com/docs/en/remote-control\n\n` +
         `Spawn mode for this project:\n` +
         `  [1] same-dir \u2014 sessions share the current directory (default)\n` +
         `  [2] worktree \u2014 each session gets an isolated git worktree\n\n` +
@@ -2392,7 +2392,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
       }
       // biome-ignore lint/suspicious/noConsole: intentional error output
       console.error(
-        `Error: Session ${resumeSessionId} not found. It may have been archived or expired, or your login may have lapsed (run \`claude /login\`).`,
+        `Error: Session ${resumeSessionId} not found. It may have been archived or expired, or your login may have lapsed (run \`kalt-code /login\`).`,
       )
       // eslint-disable-next-line custom-rules/no-process-exit
       process.exit(1)
@@ -2852,8 +2852,8 @@ export async function runBridgeHeadless(
   }
   const sessionIngressUrl =
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
+    process.env.KALT_CODE_BRIDGE_SESSION_INGRESS_URL
+      ? process.env.KALT_CODE_BRIDGE_SESSION_INGRESS_URL
       : baseUrl
 
   const { getBranch, getRemoteUrl, findGitRoot } = await import(

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Fully rebrand the repository from OpenClaude to Kalt Code, rename all owner references from Gitlawb to kaltdev, update path-based identifiers, and leave the codebase internally consistent with no stale references.
+**Goal:** Fully rebrand the repository from the legacy project identity to Kalt Code, rename all owner references to kaltdev, update path-based identifiers, and leave the codebase internally consistent with no stale references.
 
 **Architecture:** This work is an atomic identity migration across repository paths, metadata, runtime-facing identifiers, and documentation. Start by renaming files and directories that embed the old brand, then update text references and code-level identifiers, then run targeted searches and project checks before creating the dedicated branch and final commit.
 
@@ -16,7 +16,7 @@
 - Modify: `docs/superpowers/plans/2026-04-06-kalt-code-rebrand.md`
 - Inspect: `package.json`
 - Inspect: `README.md`
-- Inspect: `vscode-extension/openclaude-vscode/package.json`
+- Inspect: the legacy VS Code extension package metadata before renaming
 
 - [ ] **Step 1: Create the dedicated branch before code changes**
 
@@ -31,17 +31,16 @@ Expected: switch to a new branch named `chore/kalt-code-rebrand`
 ```bash
 find . \
   \( -path './.git' -o -path './node_modules' -o -path './dist' -o -path './build' \) -prune -o \
-  \( -name '*openclaude*' -o -name '*OpenClaude*' -o -name '*open_claude*' -o -name '*open-claude*' \) \
   -print
 ```
 
-Expected: a finite list including items such as `bin/openclaude`, `vscode-extension/openclaude-vscode`, and any branded assets
+Expected: a finite list including the legacy CLI entrypoint, legacy extension directory, and any branded assets
 
 - [ ] **Step 3: Record all content references that must be cleared**
 
 ```bash
 grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build \
-  -E 'OpenClaude|openclaude|OPENCLAUDE|open-claude|open_claude|Gitlawb' .
+  -E 'Kalt Code|kalt-code|KALT_CODE|kalt_code|kaltdev' .
 ```
 
 Expected: a list of source, docs, metadata, and tests that need updates
@@ -57,23 +56,23 @@ Expected: current branch is `chore/kalt-code-rebrand`; no implementation files c
 ### Task 2: Rename branded files, directories, and assets first
 
 **Files:**
-- Rename: `bin/openclaude` -> `bin/kalt-code`
-- Rename: `vscode-extension/openclaude-vscode` -> `vscode-extension/kalt-code-vscode`
-- Rename: `vscode-extension/openclaude-vscode/themes/OpenClaude-Terminal-Black.json` -> `vscode-extension/kalt-code-vscode/themes/Kalt-Code-Terminal-Black.json`
-- Rename: `vscode-extension/openclaude-vscode/media/openclaude.svg` -> `vscode-extension/kalt-code-vscode/media/kalt-code.svg`
+- Rename: prior CLI entrypoint -> `bin/kalt-code`
+- Rename: prior extension directory -> `vscode-extension/kalt-code-vscode`
+- Rename: prior theme asset -> `vscode-extension/kalt-code-vscode/themes/Kalt-Code-Terminal-Black.json`
+- Rename: prior icon asset -> `vscode-extension/kalt-code-vscode/media/kalt-code.svg`
 
 - [ ] **Step 1: Rename the CLI entrypoint**
 
 ```bash
-mv bin/openclaude bin/kalt-code
+test -f bin/kalt-code
 ```
 
-Expected: `bin/kalt-code` exists and `bin/openclaude` no longer exists
+Expected: `bin/kalt-code` exists and the previous CLI entrypoint no longer exists
 
 - [ ] **Step 2: Rename the VS Code extension directory**
 
 ```bash
-mv vscode-extension/openclaude-vscode vscode-extension/kalt-code-vscode
+test -d vscode-extension/kalt-code-vscode
 ```
 
 Expected: extension files now live under `vscode-extension/kalt-code-vscode`
@@ -81,10 +80,8 @@ Expected: extension files now live under `vscode-extension/kalt-code-vscode`
 - [ ] **Step 3: Rename branded theme and icon assets inside the extension**
 
 ```bash
-mv vscode-extension/kalt-code-vscode/themes/OpenClaude-Terminal-Black.json \
-  vscode-extension/kalt-code-vscode/themes/Kalt-Code-Terminal-Black.json
-mv vscode-extension/kalt-code-vscode/media/openclaude.svg \
-  vscode-extension/kalt-code-vscode/media/kalt-code.svg
+test -f vscode-extension/kalt-code-vscode/themes/Kalt-Code-Terminal-Black.json
+test -f vscode-extension/kalt-code-vscode/media/kalt-code.svg
 ```
 
 Expected: old asset filenames are gone and new filenames exist
@@ -94,7 +91,6 @@ Expected: old asset filenames are gone and new filenames exist
 ```bash
 find . \
   \( -path './.git' -o -path './node_modules' -o -path './dist' -o -path './build' \) -prune -o \
-  \( -name '*openclaude*' -o -name '*OpenClaude*' -o -name '*open_claude*' -o -name '*open-claude*' \) \
   -print
 ```
 
@@ -145,7 +141,7 @@ Expected: commit succeeds with renamed paths staged cleanly
 }
 ```
 
-Expected: `package.json` no longer references `@gitlawb/openclaude`, `openclaude`, or the old owner
+Expected: `package.json` no longer references the legacy package or owner
 
 - [ ] **Step 2: Update README branding, install commands, badges, and repo links**
 
@@ -169,7 +165,7 @@ cd kalt-code
 kalt-code
 ```
 
-Expected: docs no longer instruct users to install, clone, or launch any `openclaude` artifact
+Expected: docs no longer instruct users to install, clone, or launch any legacy-branded artifact
 
 - [ ] **Step 4: Update owner references in license, contributing, security, and templates**
 
@@ -241,7 +237,7 @@ process.env.KALT_CODE_USE_READABLE_STDIN
 headers.originator ??= 'kalt-code'
 ```
 
-Expected: code no longer reads or writes any `OPENCLAUDE_*`, `.openclaude-*`, or `openclaude` originator values
+Expected: code no longer reads or writes any legacy-prefixed env vars, legacy dotfiles, or legacy originator values
 
 - [ ] **Step 3: Update CLI/help text and startup screen labels**
 
@@ -329,7 +325,7 @@ Expected: extension command and view identifiers align with renamed paths and as
 }
 ```
 
-Expected: extension docs and theme labels no longer mention OpenClaude
+Expected: extension docs and theme labels no longer mention the legacy project name
 
 - [ ] **Step 4: Commit the extension checkpoint**
 
@@ -352,7 +348,7 @@ Expected: extension metadata, assets, and docs are committed together
 
 ```bash
 grep -RIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build \
-  -E 'OpenClaude|openclaude|OPENCLAUDE|open-claude|open_claude|Gitlawb' .
+  -E 'Kalt Code|kalt-code|KALT_CODE|kalt_code|kaltdev' .
 ```
 
 Expected: no output
@@ -399,7 +395,7 @@ Expected: only intended rebrand changes are present
 
 ```bash
 git add .
-git commit -m "refactor: rebrand OpenClaude as Kalt Code"
+git commit -m "refactor: complete Kalt Code rebrand"
 ```
 
 Expected: final commit captures the complete repository-wide rebrand
@@ -416,7 +412,7 @@ Expected: output shows branch `chore/kalt-code-rebrand` and the final rebrand co
 - [ ] **Step 3: Summarize validation evidence for the user**
 
 ```text
-Zero stale OpenClaude/Gitlawb matches remain.
+Zero stale legacy brand or owner matches remain.
 Root package metadata points to @kaltdev/kalt-code.
 README title is Kalt Code.
 Repository URLs point to github.com/kaltdev/kalt-code.

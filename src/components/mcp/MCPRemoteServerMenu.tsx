@@ -102,9 +102,9 @@ export function MCPRemoteServerMenu({
       if (success) {
         onComplete?.(`Authentication successful. Connected to ${server.name}.`);
       } else if (result.client.type === 'needs-auth') {
-        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Kalt Code.');
       } else {
-        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Kalt Code for the changes to take effect.');
       }
     } catch (err) {
       logEvent('tengu_claudeai_mcp_auth_completed', {
@@ -186,7 +186,7 @@ export function MCPRemoteServerMenu({
         void handleClaudeAIClearAuthComplete();
       } else {
         // First Enter: open the browser
-        const connectorsUrl = `${getOauthConfig().CLAUDE_AI_ORIGIN}/settings/connectors`;
+        const connectorsUrl = `${getOauthConfig().KALT_CODE_AI_ORIGIN}/settings/connectors`;
         setClaudeAIClearAuthUrl(connectorsUrl);
         setClaudeAIClearAuthBrowserOpened(true);
         void openBrowser(connectorsUrl);
@@ -213,7 +213,7 @@ export function MCPRemoteServerMenu({
   const serverCommandsCount = filterMcpPromptsByServer(mcp.commands, server.name).length;
   const toggleMcpServer = useMcpToggleEnabled();
   const handleClaudeAIAuth = React.useCallback(async () => {
-    const claudeAiBaseUrl = getOauthConfig().CLAUDE_AI_ORIGIN;
+    const claudeAiBaseUrl = getOauthConfig().KALT_CODE_AI_ORIGIN;
     const accountInfo = getOauthAccountInfo();
     const orgUuid = accountInfo?.organizationUuid;
     let authUrl: string;
@@ -221,7 +221,7 @@ export function MCPRemoteServerMenu({
       // Use the direct auth URL with org and server IDs
       // Replace 'mcprs' prefix with 'mcpsrv' if present
       const serverId = server.config.id.startsWith('mcprs') ? 'mcpsrv' + server.config.id.slice(5) : server.config.id;
-      const productSurface = encodeURIComponent(process.env.CLAUDE_CODE_ENTRYPOINT || 'cli');
+      const productSurface = encodeURIComponent(process.env.KALT_CODE_ENTRYPOINT || 'cli');
       authUrl = `${claudeAiBaseUrl}/api/organizations/${orgUuid}/mcp/start-auth/${serverId}?product_surface=${productSurface}`;
     } else {
       // Fall back to settings/connectors if we don't have the required IDs
@@ -281,11 +281,11 @@ export function MCPRemoteServerMenu({
           const message = isEffectivelyAuthenticated ? `Authentication successful. Reconnected to ${server.name}.` : `Authentication successful. Connected to ${server.name}.`;
           onComplete?.(message);
         } else if (result_0.client.type === 'needs-auth') {
-          onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+          onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Kalt Code.');
         } else {
           // result.client.type === 'failed'
           logMCPDebug(server.name, `Reconnection failed after authentication`);
-          onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+          onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Kalt Code for the changes to take effect.');
         }
       }
     } catch (err_1) {

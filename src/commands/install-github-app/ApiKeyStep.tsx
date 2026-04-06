@@ -152,7 +152,7 @@ export function ApiKeyStep(t0) {
   }
   let t11;
   if ($[27] !== existingApiKey || $[28] !== selectedOption || $[29] !== theme) {
-    t11 = existingApiKey && <Box marginBottom={1}><Text>{selectedOption === "existing" ? color("success", theme)("> ") : "  "}Use your existing Claude Code API key</Text></Box>;
+    t11 = existingApiKey && <Box marginBottom={1}><Text>{selectedOption === "existing" ? color("success", theme)("> ") : "  "}Use your existing Kalt Code API key</Text></Box>;
     $[27] = existingApiKey;
     $[28] = selectedOption;
     $[29] = theme;
@@ -189,7 +189,7 @@ export function ApiKeyStep(t0) {
   }
   let t15;
   if ($[40] !== apiKeyOrOAuthToken || $[41] !== cursorOffset || $[42] !== onApiKeyChange || $[43] !== onSubmit || $[44] !== selectedOption || $[45] !== terminalSize) {
-    t15 = selectedOption === "new" && <TextInput value={apiKeyOrOAuthToken} onChange={onApiKeyChange} onSubmit={onSubmit} onPaste={onApiKeyChange} focus={true} placeholder={"sk-ant\u2026 (Create a new key at https://platform.claude.com/settings/keys)"} mask="*" columns={terminalSize.columns} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} showCursor={true} />;
+    t15 = selectedOption === "new" && <TextInput value={apiKeyOrOAuthToken} onChange={onApiKeyChange} onSubmit={onSubmit} onPaste={onApiKeyChange} focus={true} placeholder={"sk-ant\u2026 (Create a new key at https://platform.kalt-code.com/settings/keys)"} mask="*" columns={terminalSize.columns} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} showCursor={true} />;
     $[40] = apiKeyOrOAuthToken;
     $[41] = cursorOffset;
     $[42] = onApiKeyChange;

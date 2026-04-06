@@ -49,7 +49,7 @@ import * as lockfile from '../lockfile.js'
 import { logError } from '../log.js'
 import { gt, gte } from '../semver.js'
 import {
-  filterClaudeAliases,
+  filterKaltCodeAliases,
   getShellConfigPaths,
   readFileLines,
   writeFileLines,
@@ -109,7 +109,7 @@ export function getPlatform(): string {
 }
 
 export function getBinaryName(platform: string): string {
-  return platform.startsWith('win32') ? 'claude.exe' : 'claude'
+  return platform.startsWith('win32') ? 'kalt-code.exe' : 'claude'
 }
 
 function getBaseDirectories() {
@@ -334,7 +334,7 @@ async function installVersionFromPackage(
     const nodeModulesDir = join(stagingPath, 'node_modules', '@anthropic-ai')
     const entries = await readdir(nodeModulesDir)
     const nativePackage = entries.find((entry: string) =>
-      entry.startsWith('claude-cli-native-'),
+      entry.startsWith('kalt-code-native-'),
     )
 
     if (!nativePackage) {
@@ -465,7 +465,7 @@ async function performVersionUpdate(
     logForDebugging(`Version ${version} already installed, updating symlink`)
   }
 
-  // Create direct symlink from ~/.local/bin/claude to the version binary
+  // Create direct symlink from ~/.local/bin/kalt-code to the version binary
   await removeDirectoryIfEmpty(executablePath)
   await updateSymlink(executablePath, installPath)
 
@@ -845,7 +845,7 @@ export async function checkInstall(
     })
   }
 
-  // Check if claude executable exists and is valid.
+  // Check if kalt-code executable exists and is valid.
   // On non-Windows, call readlink directly and route errno — ENOENT means
   // the executable is missing, EINVAL means it exists but isn't a symlink.
   // This avoids an access()→readlink() TOCTOU where deletion between the
@@ -856,7 +856,7 @@ export async function checkInstall(
     // On Windows it's a copied executable, not a symlink
     if (!(await isPossibleClaudeBinary(dirs.executable))) {
       messages.push({
-        message: `installMethod is native, but claude command is missing or invalid at ${dirs.executable}`,
+        message: `installMethod is native, but kalt-code command is missing or invalid at ${dirs.executable}`,
         userActionRequired: true,
         type: 'error',
       })
@@ -875,7 +875,7 @@ export async function checkInstall(
     } catch (e) {
       if (isENOENT(e)) {
         messages.push({
-          message: `installMethod is native, but claude command not found at ${dirs.executable}`,
+          message: `installMethod is native, but kalt-code command not found at ${dirs.executable}`,
           userActionRequired: true,
           type: 'error',
         })
@@ -1458,7 +1458,7 @@ async function isNpmSymlink(executablePath: string): Promise<boolean> {
 }
 
 /**
- * Remove the claude symlink from the executable directory
+ * Remove the kalt-code symlink from the executable directory
  * This is used when switching away from native installation
  * Will only remove if it's a native binary symlink, not npm-managed JS files
  */
@@ -1476,17 +1476,17 @@ export async function removeInstalledSymlink(): Promise<void> {
 
     // It's a native binary symlink, safe to remove
     await unlink(dirs.executable)
-    logForDebugging(`Removed claude symlink at ${dirs.executable}`)
+    logForDebugging(`Removed kalt-code symlink at ${dirs.executable}`)
   } catch (error) {
     if (isENOENT(error)) {
       return
     }
-    logError(new Error(`Failed to remove claude symlink: ${error}`))
+    logError(new Error(`Failed to remove kalt-code symlink: ${error}`))
   }
 }
 
 /**
- * Clean up old claude aliases from shell configuration files
+ * Clean up old kalt-code aliases from shell configuration files
  * Only handles alias removal, not PATH setup
  */
 export async function cleanupShellAliases(): Promise<SetupMessage[]> {
@@ -1498,16 +1498,16 @@ export async function cleanupShellAliases(): Promise<SetupMessage[]> {
       const lines = await readFileLines(configFile)
       if (!lines) continue
 
-      const { filtered, hadAlias } = filterClaudeAliases(lines)
+      const { filtered, hadAlias } = filterKaltCodeAliases(lines)
 
       if (hadAlias) {
         await writeFileLines(configFile, filtered)
         messages.push({
-          message: `Removed claude alias from ${configFile}. Run: unalias claude`,
+          message: `Removed kalt-code alias from ${configFile}. Run: unalias kalt-code`,
           userActionRequired: true,
           type: 'alias',
         })
-        logForDebugging(`Cleaned up claude alias from ${shellType} config`)
+        logForDebugging(`Cleaned up kalt-code alias from ${shellType} config`)
       }
     } catch (error) {
       logError(error)
@@ -1558,8 +1558,8 @@ async function manualRemoveNpmPackage(
 
     if (getPlatform().startsWith('win32')) {
       // Windows - only remove executables, not the package directory
-      const binCmd = join(globalPrefix, 'claude.cmd')
-      const binPs1 = join(globalPrefix, 'claude.ps1')
+      const binCmd = join(globalPrefix, 'kalt-code.cmd')
+      const binPs1 = join(globalPrefix, 'kalt-code.ps1')
       const binExe = join(globalPrefix, 'claude')
 
       if (await tryRemove(binCmd, 'bin script')) {
@@ -1662,9 +1662,9 @@ export async function cleanupNpmInstallations(): Promise<{
   const warnings: string[] = []
   let removed = 0
 
-  // Always attempt to remove @anthropic-ai/claude-code
+  // Always attempt to remove @anthropic-ai/kalt-code
   const codePackageResult = await attemptNpmUninstall(
-    '@anthropic-ai/claude-code',
+    '@anthropic-ai/kalt-code',
   )
   if (codePackageResult.success) {
     removed++
@@ -1676,7 +1676,7 @@ export async function cleanupNpmInstallations(): Promise<{
   }
 
   // Also attempt to remove MACRO.PACKAGE_URL if it's defined and different
-  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code') {
+  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/kalt-code') {
     const macroPackageResult = await attemptNpmUninstall(MACRO.PACKAGE_URL)
     if (macroPackageResult.success) {
       removed++
@@ -1688,8 +1688,8 @@ export async function cleanupNpmInstallations(): Promise<{
     }
   }
 
-  // Check for local installation at ~/.claude/local
-  const localInstallDir = join(homedir(), '.claude', 'local')
+  // Check for local installation at ~/.kalt-code/local
+  const localInstallDir = join(homedir(), '.kalt-code', 'local')
 
   try {
     await rm(localInstallDir, { recursive: true })

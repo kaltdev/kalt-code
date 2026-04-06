@@ -5,18 +5,18 @@ const { mock } = require('bun:test');
 function createStatus(overrides = {}) {
   return {
     installed: true,
-    executable: 'openclaude',
-    launchCommand: 'openclaude --project-aware',
-    terminalName: 'OpenClaude',
+    executable: 'kalt-code',
+    launchCommand: 'kalt-code --project-aware',
+    terminalName: 'Kalt Code',
     shimEnabled: false,
-    workspaceFolder: '/workspace/openclaude/very/long/path/example-project',
+    workspaceFolder: '/workspace/kalt-code/very/long/path/example-project',
     workspaceSourceLabel: 'active editor workspace',
-    launchCwd: '/workspace/openclaude/very/long/path/example-project',
-    launchCwdLabel: '/workspace/openclaude/very/long/path/example-project',
+    launchCwd: '/workspace/kalt-code/very/long/path/example-project',
+    launchCwdLabel: '/workspace/kalt-code/very/long/path/example-project',
     canLaunchInWorkspaceRoot: true,
     profileStatusLabel: 'Found',
-    profileStatusHint: '/workspace/openclaude/very/long/path/example-project/.openclaude-profile.json',
-    workspaceProfilePath: '/workspace/openclaude/very/long/path/example-project/.openclaude-profile.json',
+    profileStatusHint: '/workspace/kalt-code/very/long/path/example-project/.kalt-code-profile.json',
+    workspaceProfilePath: '/workspace/kalt-code/very/long/path/example-project/.kalt-code-profile.json',
     providerState: {
       label: 'Codex',
       detail: 'gpt-5.4',
@@ -58,18 +58,18 @@ function loadExtension() {
   return require('./extension');
 }
 
-test('renderControlCenterHtml uses the OpenClaude wordmark, status rail, and warm action hierarchy', () => {
+test('renderControlCenterHtml uses the Kalt Code wordmark, status rail, and warm action hierarchy', () => {
   const { renderControlCenterHtml } = loadExtension();
   const html = renderControlCenterHtml(createStatus(), { nonce: 'test-nonce', platform: 'win32' });
 
-  assert.match(html, /Open<span class="wordmark-accent">Claude<\/span>/);
+  assert.match(html, /Kalt <span class="wordmark-accent">Code<\/span>/);
   assert.match(html, /class="status-rail"/);
   assert.match(html, /\.sunset-gradient\s*\{/);
   assert.match(html, /class="action-button primary" id="launch"/);
   assert.match(html, /class="action-button secondary" id="launchRoot"/);
   assert.match(
     html,
-    /title="\/workspace\/openclaude\/very\/long\/path\/example-project"[^>]*>\/workspace\/openclaude\/very\/long\/path\/example-project<\//,
+    /title="\/workspace\/kalt-code\/very\/long\/path\/example-project"[^>]*>\/workspace\/kalt-code\/very\/long\/path\/example-project<\//,
   );
 });
 
@@ -98,9 +98,9 @@ test('renderControlCenterHtml shows explicit disabled and empty states when work
   assert.doesNotMatch(html, /id="openProfile"/);
 });
 
-test('OpenClaudeControlCenterProvider.getHtml supplies a nonce to the redesigned renderer', () => {
-  const { OpenClaudeControlCenterProvider } = loadExtension();
-  const provider = new OpenClaudeControlCenterProvider();
+test('KaltCodeControlCenterProvider.getHtml supplies a nonce to the redesigned renderer', () => {
+  const { KaltCodeControlCenterProvider } = loadExtension();
+  const provider = new KaltCodeControlCenterProvider();
 
   assert.doesNotThrow(() => provider.getHtml(createStatus()));
 
@@ -116,16 +116,16 @@ test('resolveLaunchTargets distinguishes project-aware launch from workspace-roo
 
   assert.deepEqual(
     resolveLaunchTargets({
-      activeFilePath: '/workspace/openclaude/src/panels/control-center.js',
-      workspacePath: '/workspace/openclaude',
+      activeFilePath: '/workspace/kalt-code/src/panels/control-center.js',
+      workspacePath: '/workspace/kalt-code',
       workspaceSourceLabel: 'active editor workspace',
     }),
     {
-      projectAwareCwd: '/workspace/openclaude/src/panels',
-      projectAwareCwdLabel: '/workspace/openclaude/src/panels',
+      projectAwareCwd: '/workspace/kalt-code/src/panels',
+      projectAwareCwdLabel: '/workspace/kalt-code/src/panels',
       projectAwareSourceLabel: 'active file directory',
-      workspaceRootCwd: '/workspace/openclaude',
-      workspaceRootCwdLabel: '/workspace/openclaude',
+      workspaceRootCwd: '/workspace/kalt-code',
+      workspaceRootCwdLabel: '/workspace/kalt-code',
       launchActionsShareTarget: false,
       launchActionsShareTargetReason: null,
     },
@@ -137,17 +137,17 @@ test('resolveLaunchTargets anchors relative launch commands to the workspace roo
 
   assert.deepEqual(
     resolveLaunchTargets({
-      executable: './node_modules/.bin/openclaude',
-      activeFilePath: '/workspace/openclaude/src/panels/control-center.js',
-      workspacePath: '/workspace/openclaude',
+      executable: './node_modules/.bin/kalt-code',
+      activeFilePath: '/workspace/kalt-code/src/panels/control-center.js',
+      workspacePath: '/workspace/kalt-code',
       workspaceSourceLabel: 'active editor workspace',
     }),
     {
-      projectAwareCwd: '/workspace/openclaude',
-      projectAwareCwdLabel: '/workspace/openclaude',
+      projectAwareCwd: '/workspace/kalt-code',
+      projectAwareCwdLabel: '/workspace/kalt-code',
       projectAwareSourceLabel: 'workspace root (required by relative launch command)',
-      workspaceRootCwd: '/workspace/openclaude',
-      workspaceRootCwdLabel: '/workspace/openclaude',
+      workspaceRootCwd: '/workspace/kalt-code',
+      workspaceRootCwdLabel: '/workspace/kalt-code',
       launchActionsShareTarget: true,
       launchActionsShareTargetReason: 'relative-launch-command',
     },
@@ -159,17 +159,17 @@ test('resolveLaunchTargets ignores active files outside the selected workspace',
 
   assert.deepEqual(
     resolveLaunchTargets({
-      executable: 'openclaude',
+      executable: 'kalt-code',
       activeFilePath: '/tmp/notes/scratch.js',
-      workspacePath: '/workspace/openclaude',
+      workspacePath: '/workspace/kalt-code',
       workspaceSourceLabel: 'first workspace folder',
     }),
     {
-      projectAwareCwd: '/workspace/openclaude',
-      projectAwareCwdLabel: '/workspace/openclaude',
+      projectAwareCwd: '/workspace/kalt-code',
+      projectAwareCwdLabel: '/workspace/kalt-code',
       projectAwareSourceLabel: 'first workspace folder',
-      workspaceRootCwd: '/workspace/openclaude',
-      workspaceRootCwdLabel: '/workspace/openclaude',
+      workspaceRootCwd: '/workspace/kalt-code',
+      workspaceRootCwdLabel: '/workspace/kalt-code',
       launchActionsShareTarget: true,
       launchActionsShareTargetReason: null,
     },
@@ -192,36 +192,36 @@ test('renderControlCenterHtml explains distinct launch targets when an active fi
   const { renderControlCenterHtml } = loadExtension();
   const html = renderControlCenterHtml(
     createStatus({
-      launchCwd: '/workspace/openclaude/src/panels',
-      launchCwdLabel: '/workspace/openclaude/src/panels',
+      launchCwd: '/workspace/kalt-code/src/panels',
+      launchCwdLabel: '/workspace/kalt-code/src/panels',
       launchCwdSourceLabel: 'active file directory',
-      workspaceRootCwd: '/workspace/openclaude',
-      workspaceRootCwdLabel: '/workspace/openclaude',
+      workspaceRootCwd: '/workspace/kalt-code',
+      workspaceRootCwdLabel: '/workspace/kalt-code',
     }),
     { nonce: 'test-nonce', platform: 'linux' },
   );
 
-  assert.match(html, /Starts beside the active file · \/workspace\/openclaude\/src\/panels/);
-  assert.match(html, /Always starts at the workspace root · \/workspace\/openclaude/);
+  assert.match(html, /Starts beside the active file · \/workspace\/kalt-code\/src\/panels/);
+  assert.match(html, /Always starts at the workspace root · \/workspace\/kalt-code/);
 });
 
 test('renderControlCenterHtml makes shared workspace-root launches explicit for relative commands', () => {
   const { renderControlCenterHtml } = loadExtension();
   const html = renderControlCenterHtml(
     createStatus({
-      launchCwd: '/workspace/openclaude',
-      launchCwdLabel: '/workspace/openclaude',
+      launchCwd: '/workspace/kalt-code',
+      launchCwdLabel: '/workspace/kalt-code',
       launchCwdSourceLabel: 'workspace root (required by relative launch command)',
-      workspaceRootCwd: '/workspace/openclaude',
-      workspaceRootCwdLabel: '/workspace/openclaude',
+      workspaceRootCwd: '/workspace/kalt-code',
+      workspaceRootCwdLabel: '/workspace/kalt-code',
       launchActionsShareTarget: true,
       launchActionsShareTargetReason: 'relative-launch-command',
     }),
     { nonce: 'test-nonce', platform: 'linux' },
   );
 
-  assert.match(html, /Project-aware launch is anchored to the workspace root by the relative command · \/workspace\/openclaude/);
-  assert.match(html, /Same workspace-root target as Launch OpenClaude because the relative command resolves from the workspace root · \/workspace\/openclaude/);
+  assert.match(html, /Project-aware launch is anchored to the workspace root by the relative command · \/workspace\/kalt-code/);
+  assert.match(html, /Same workspace-root target as Launch Kalt Code because the relative command resolves from the workspace root · \/workspace\/kalt-code/);
 });
 
 test('renderControlCenterHtml escapes hostile text and title values', () => {

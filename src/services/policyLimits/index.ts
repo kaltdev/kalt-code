@@ -18,7 +18,7 @@ import { readFileSync as fsReadFileSync } from 'fs'
 import { unlink, writeFile } from 'fs/promises'
 import { join } from 'path'
 import {
-  CLAUDE_AI_INFERENCE_SCOPE,
+  KALT_CODE_AI_INFERENCE_SCOPE,
   getOauthConfig,
   OAUTH_BETA_HEADER,
 } from '../../constants/oauth.js'
@@ -194,7 +194,7 @@ export function isPolicyLimitsEligible(): boolean {
   }
 
   // Must have Claude.ai inference scope
-  if (!tokens.scopes?.includes(CLAUDE_AI_INFERENCE_SCOPE)) {
+  if (!tokens.scopes?.includes(KALT_CODE_AI_INFERENCE_SCOPE)) {
     return false
   }
 

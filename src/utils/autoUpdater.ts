@@ -21,7 +21,7 @@ import { logError } from './log.js'
 import { gte, lt } from './semver.js'
 import { getInitialSettings } from './settings/settings.js'
 import {
-  filterClaudeAliases,
+  filterKaltCodeAliases,
   getShellConfigPaths,
   readFileLines,
   writeFileLines,
@@ -29,7 +29,7 @@ import {
 import { jsonParse } from './slowOperations.js'
 
 const GCS_BUCKET_URL =
-  'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases'
+  'https://storage.googleapis.com/kalt-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/kalt-code-releases'
 
 class AutoUpdaterError extends ClaudeError {}
 
@@ -62,7 +62,7 @@ export type MaxVersionConfig = {
  *
  * Versioning approach:
  * 1. For version requirements/compatibility (assertMinVersion), we use semver comparison that ignores build metadata
- * 2. For updates ('claude update'), we use exact string comparison to detect any change, including SHA
+ * 2. For updates ('kalt-code update'), we use exact string comparison to detect any change, including SHA
  *    - This ensures users always get the latest build, even when only the SHA changes
  *    - The UI clearly shows both versions including build metadata
  *
@@ -90,11 +90,11 @@ export async function assertMinVersion(): Promise<void> {
     ) {
       // biome-ignore lint/suspicious/noConsole:: intentional console output
       console.error(`
-It looks like your version of Claude Code (${MACRO.VERSION}) needs an update.
+It looks like your version of Kalt Code (${MACRO.VERSION}) needs an update.
 A newer version (${versionConfig.minVersion} or higher) is required to continue.
 
 To update, please run:
-    claude update
+    kalt-code update
 
 This will ensure you have access to the latest features and improvements.
 `)
@@ -489,13 +489,13 @@ export async function installGlobalPackage(
       console.error(`
 Error: Windows NPM detected in WSL
 
-You're running Claude Code in WSL but using the Windows NPM installation from /mnt/c/.
+You're running Kalt Code in WSL but using the Windows NPM installation from /mnt/c/.
 This configuration is not supported for updates.
 
 To fix this issue:
   1. Install Node.js within your Linux distribution: e.g. sudo apt install nodejs npm
   2. Make sure Linux NPM is in your PATH before the Windows version
-  3. Try updating again with 'claude update'
+  3. Try updating again with 'kalt-code update'
 `)
       return 'install_failed'
     }
@@ -540,7 +540,7 @@ To fix this issue:
 }
 
 /**
- * Remove claude aliases from shell configuration files
+ * Remove kalt-code aliases from shell configuration files
  * This helps clean up old installation methods when switching to native or npm global
  */
 async function removeClaudeAliasesFromShellConfigs(): Promise<void> {
@@ -552,11 +552,11 @@ async function removeClaudeAliasesFromShellConfigs(): Promise<void> {
       const lines = await readFileLines(configFile)
       if (!lines) continue
 
-      const { filtered, hadAlias } = filterClaudeAliases(lines)
+      const { filtered, hadAlias } = filterKaltCodeAliases(lines)
 
       if (hadAlias) {
         await writeFileLines(configFile, filtered)
-        logForDebugging(`Removed claude alias from ${configFile}`)
+        logForDebugging(`Removed kalt-code alias from ${configFile}`)
       }
     } catch (error) {
       // Don't fail the whole operation if one file can't be processed

@@ -150,7 +150,7 @@ export function Doctor(t0) {
       default: TASK_MAX_OUTPUT_DEFAULT,
       upperLimit: TASK_MAX_OUTPUT_UPPER_LIMIT
     }, {
-      name: "CLAUDE_CODE_MAX_OUTPUT_TOKENS",
+      name: "KALT_CODE_MAX_OUTPUT_TOKENS",
       ...getModelMaxOutputTokens("claude-opus-4-6")
     }];
     t4 = envVars.map(_temp8).filter(_temp9);
@@ -166,7 +166,7 @@ export function Doctor(t0) {
       getDoctorDiagnostic().then(setDiagnostic);
       (async () => {
         const userAgentsDir = join(getClaudeConfigHomeDir(), "agents");
-        const projectAgentsDir = join(getOriginalCwd(), ".claude", "agents");
+        const projectAgentsDir = join(getOriginalCwd(), ".kalt-code", "agents");
         const {
           activeAgents,
           allAgents,
@@ -222,7 +222,7 @@ export function Doctor(t0) {
   let t7;
   if ($[11] !== onDone) {
     t7 = () => {
-      onDone("Claude Code diagnostics dismissed", {
+      onDone("Kalt Code diagnostics dismissed", {
         display: "system"
       });
     };
@@ -471,7 +471,7 @@ export function Doctor(t0) {
   }
   let t39;
   if ($[73] !== contextWarnings) {
-    t39 = contextWarnings && (contextWarnings.claudeMdWarning || contextWarnings.agentWarning || contextWarnings.mcpWarning) && <Box flexDirection="column"><Text bold={true}>Context Usage Warnings</Text>{contextWarnings.claudeMdWarning && <><Text>└{" "}<Text color="warning">{figures.warning} {contextWarnings.claudeMdWarning.message}</Text></Text><Text>{"  "}└ Files:</Text>{contextWarnings.claudeMdWarning.details.map(_temp16)}</>}{contextWarnings.agentWarning && <><Text>└{" "}<Text color="warning">{figures.warning} {contextWarnings.agentWarning.message}</Text></Text><Text>{"  "}└ Top contributors:</Text>{contextWarnings.agentWarning.details.map(_temp17)}</>}{contextWarnings.mcpWarning && <><Text>└{" "}<Text color="warning">{figures.warning} {contextWarnings.mcpWarning.message}</Text></Text><Text>{"  "}└ MCP servers:</Text>{contextWarnings.mcpWarning.details.map(_temp18)}</>}</Box>;
+    t39 = contextWarnings && (contextWarnings.kalt-codeMdWarning || contextWarnings.agentWarning || contextWarnings.mcpWarning) && <Box flexDirection="column"><Text bold={true}>Context Usage Warnings</Text>{contextWarnings.kalt-codeMdWarning && <><Text>└{" "}<Text color="warning">{figures.warning} {contextWarnings.kalt-codeMdWarning.message}</Text></Text><Text>{"  "}└ Files:</Text>{contextWarnings.kalt-codeMdWarning.details.map(_temp16)}</>}{contextWarnings.agentWarning && <><Text>└{" "}<Text color="warning">{figures.warning} {contextWarnings.agentWarning.message}</Text></Text><Text>{"  "}└ Top contributors:</Text>{contextWarnings.agentWarning.details.map(_temp17)}</>}{contextWarnings.mcpWarning && <><Text>└{" "}<Text color="warning">{figures.warning} {contextWarnings.mcpWarning.message}</Text></Text><Text>{"  "}└ MCP servers:</Text>{contextWarnings.mcpWarning.details.map(_temp18)}</>}</Box>;
     $[73] = contextWarnings;
     $[74] = t39;
   } else {

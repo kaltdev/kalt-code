@@ -247,7 +247,7 @@ export function ConsoleOAuthFlow({
       });
       if (mode === 'setup-token') {
         // For setup-token mode, return the OAuth access token directly (it can be used as an API key)
-        // Don't save to keychain - the token is displayed for manual use with CLAUDE_CODE_OAUTH_TOKEN
+        // Don't save to keychain - the token is displayed for manual use with KALT_CODE_OAUTH_TOKEN
         setOAuthStatus({
           state: 'success',
           token: result.accessToken
@@ -262,7 +262,7 @@ export function ConsoleOAuthFlow({
           state: 'success'
         });
         void sendNotification({
-          message: 'Claude Code login successful',
+          message: 'Kalt Code login successful',
           notificationType: 'auth_success'
         }, terminal);
       }
@@ -341,7 +341,7 @@ export function ConsoleOAuthFlow({
               </Text>
               <Text dimColor>
                 Use this token by setting: export
-                CLAUDE_CODE_OAUTH_TOKEN=&lt;token&gt;
+                KALT_CODE_OAUTH_TOKEN=&lt;token&gt;
               </Text>
             </Box>
           </Box>}
@@ -384,7 +384,7 @@ function OAuthStatusMessage({
     case 'idle': {
       const promptText =
         startingMessage ||
-        'Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.'
+        'Kalt Code can be used with your Claude subscription or billed based on API usage through your Console account.'
 
       const loginOptions = [
         {
@@ -511,7 +511,7 @@ function OAuthStatusMessage({
         <Box flexDirection="column" gap={1}>
           <Box>
             <Spinner />
-            <Text>Creating API key for Claude Code…</Text>
+            <Text>Creating API key for Kalt Code…</Text>
           </Box>
         </Box>
       )

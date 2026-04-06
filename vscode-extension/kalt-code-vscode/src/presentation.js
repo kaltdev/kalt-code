@@ -33,7 +33,7 @@ function buildActionModel({ canLaunchInWorkspaceRoot, workspaceProfilePath } = {
   return {
     primary: {
       id: 'launch',
-      label: 'Launch OpenClaude',
+      label: 'Launch Kalt Code',
       detail: 'Use the resolved project-aware launch directory',
       tone: 'accent',
       disabled: false,
@@ -108,8 +108,8 @@ function buildControlCenterViewModel(status = {}) {
 
   return {
     header: {
-      eyebrow: 'OpenClaude Control Center',
-      title: 'Project-aware OpenClaude companion',
+      eyebrow: 'Kalt Code Control Center',
+      title: 'Project-aware Kalt Code companion',
       subtitle:
         'Useful local status, predictable launch behavior, and quick access to the workflows you actually use.',
     },
@@ -174,12 +174,12 @@ function buildControlCenterViewModel(status = {}) {
       {
         title: 'Runtime',
         rows: [
-          {
-            key: 'runtime',
-            label: 'OpenClaude executable',
-            summary: runtimeSummary,
-            detail: runtimeDetail,
-            tone: getRuntimeTone(status.installed),
+        {
+          key: 'runtime',
+          label: 'Kalt Code executable',
+          summary: runtimeSummary,
+          detail: runtimeDetail,
+          tone: getRuntimeTone(status.installed),
           },
           {
             key: 'provider',

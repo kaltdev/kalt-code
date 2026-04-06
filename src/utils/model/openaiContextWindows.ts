@@ -3,7 +3,7 @@
  * Context window sizes for OpenAI-compatible models used via the shim.
  * Fixes: auto-compact and warnings using wrong 200k default for OpenAI models.
  *
- * When CLAUDE_CODE_USE_OPENAI=1, getContextWindowForModel() falls through to
+ * When KALT_CODE_USE_OPENAI=1, getContextWindowForModel() falls through to
  * MODEL_CONTEXT_WINDOW_DEFAULT (200k). This causes the warning and blocking
  * thresholds to be set at 200k even for models like gpt-4o (128k) or llama3 (8k),
  * meaning users get no warning before hitting a hard API error.
@@ -48,7 +48,7 @@ const OPENAI_CONTEXT_WINDOWS: Record<string, number> = {
   'google/gemini-2.0-flash':1_048_576,
   'google/gemini-2.5-pro':  1_048_576,
 
-  // Google (native via CLAUDE_CODE_USE_GEMINI)
+  // Google (native via KALT_CODE_USE_GEMINI)
   'gemini-2.0-flash':       1_048_576,
   'gemini-2.5-pro':         1_048_576,
   'gemini-2.5-flash':       1_048_576,
@@ -114,7 +114,7 @@ const OPENAI_MAX_OUTPUT_TOKENS: Record<string, number> = {
   'google/gemini-2.0-flash':   8_192,
   'google/gemini-2.5-pro':    65_536,
 
-  // Google (native via CLAUDE_CODE_USE_GEMINI)
+  // Google (native via KALT_CODE_USE_GEMINI)
   'gemini-2.0-flash':          8_192,
   'gemini-2.5-pro':           65_536,
   'gemini-2.5-flash':         65_536,

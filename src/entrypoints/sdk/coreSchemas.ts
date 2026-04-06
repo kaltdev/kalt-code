@@ -213,7 +213,7 @@ export const McpServerStatusSchema = lazySchema(() =>
         })
         .optional()
         .describe(
-          "@internal Server capabilities (available when connected). experimental['claude/channel'] is only present if the server's plugin is on the approved channels allowlist — use its presence to decide whether to show an Enable-channel prompt.",
+          "@internal Server capabilities (available when connected). experimental['kalt-code/channel'] is only present if the server's plugin is on the approved channels allowlist — use its presence to decide whether to show an Enable-channel prompt.",
         ),
     })
     .describe('Status information for an MCP server connection.'),
@@ -1163,7 +1163,7 @@ export const AgentDefinitionSchema = lazySchema(() =>
         .enum(['user', 'project', 'local'])
         .optional()
         .describe(
-          "Scope for auto-loading agent memory files. 'user' - ~/.claude/agent-memory/<agentType>/, 'project' - .claude/agent-memory/<agentType>/, 'local' - .claude/agent-memory-local/<agentType>/",
+          "Scope for auto-loading agent memory files. 'user' - ~/.kalt-code/agent-memory/<agentType>/, 'project' - .kalt-code/agent-memory/<agentType>/, 'local' - .kalt-code/agent-memory-local/<agentType>/",
         ),
       effort: z
         .union([z.enum(['low', 'medium', 'high', 'max']), z.number().int()])
@@ -1191,9 +1191,9 @@ export const SettingSourceSchema = lazySchema(() =>
     .enum(['user', 'project', 'local'])
     .describe(
       'Source for loading filesystem-based settings. ' +
-        "'user' - Global user settings (~/.claude/settings.json). " +
-        "'project' - Project settings (.claude/settings.json). " +
-        "'local' - Local settings (.claude/settings.local.json).",
+        "'user' - Global user settings (~/.kalt-code/settings.json). " +
+        "'project' - Project settings (.kalt-code/settings.json). " +
+        "'local' - Local settings (.kalt-code/settings.local.json).",
     ),
 )
 

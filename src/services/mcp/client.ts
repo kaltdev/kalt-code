@@ -957,8 +957,8 @@ export const connectToServer = memoize(
         logMCPDebug(name, `In-process Computer Use MCP server started`)
       } else if (serverRef.type === 'stdio' || !serverRef.type) {
         const finalCommand =
-          process.env.CLAUDE_CODE_SHELL_PREFIX || serverRef.command
-        const finalArgs = process.env.CLAUDE_CODE_SHELL_PREFIX
+          process.env.KALT_CODE_SHELL_PREFIX || serverRef.command
+        const finalArgs = process.env.KALT_CODE_SHELL_PREFIX
           ? [[serverRef.command, ...serverRef.args].join(' ')]
           : serverRef.args
         transport = new StdioClientTransport({
@@ -998,8 +998,8 @@ export const connectToServer = memoize(
 
       const client = new Client(
         {
-          name: 'claude-code',
-          title: 'Open Claude',
+          name: 'kalt-code',
+          title: 'Kalt Code',
           version: MACRO.VERSION ?? 'unknown',
           description: "Anthropic's agentic coding tool",
           websiteUrl: PRODUCT_URL,
@@ -1775,7 +1775,7 @@ export const fetchToolsForClient = memoizeWithLRU(
       // Check if we should skip the mcp__ prefix for SDK MCP servers
       const skipPrefix =
         client.config.type === 'sdk' &&
-        isEnvTruthy(process.env.CLAUDE_AGENT_SDK_MCP_NO_PREFIX)
+        isEnvTruthy(process.env.KALT_CODE_AGENT_SDK_MCP_NO_PREFIX)
 
       // Convert MCP tools to our Tool format
       return toolsToProcess
@@ -3294,8 +3294,8 @@ export async function setupSdkMcpClients(
 
       const client = new Client(
         {
-          name: 'claude-code',
-          title: 'Open Claude',
+          name: 'kalt-code',
+          title: 'Kalt Code',
           version: MACRO.VERSION ?? 'unknown',
           description: "Anthropic's agentic coding tool",
           websiteUrl: PRODUCT_URL,

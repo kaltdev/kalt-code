@@ -95,7 +95,7 @@ export function isToolDetailsLoggingEnabled(): boolean {
  * - Cowork (entrypoint=local-agent) — no ZDR concept, log all MCPs
  * - claude.ai-proxied connectors — always official (from claude.ai's list)
  * - Servers whose URL matches the official MCP registry — directory
- *   connectors added via `claude mcp add`, not customer-specific config
+ *   connectors added via `kalt-code mcp add`, not customer-specific config
  *
  * Custom/user-configured MCPs stay sanitized (toolName='mcp_tool').
  */
@@ -103,7 +103,7 @@ export function isAnalyticsToolDetailsLoggingEnabled(
   mcpServerType: string | undefined,
   mcpServerBaseUrl: string | undefined,
 ): boolean {
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'local-agent') {
+  if (process.env.KALT_CODE_ENTRYPOINT === 'local-agent') {
     return true
   }
   if (mcpServerType === 'claudeai-proxy') {
@@ -484,8 +484,8 @@ export type EventMetadata = {
   sweBenchInstanceId: string
   sweBenchTaskId: string
   // Swarm/team agent identification for analytics attribution
-  agentId?: string // CLAUDE_CODE_AGENT_ID (format: agentName@teamName) or subagent UUID
-  parentSessionId?: string // CLAUDE_CODE_PARENT_SESSION_ID (team lead's session)
+  agentId?: string // KALT_CODE_AGENT_ID (format: agentName@teamName) or subagent UUID
+  parentSessionId?: string // KALT_CODE_PARENT_SESSION_ID (team lead's session)
   agentType?: 'teammate' | 'subagent' | 'standalone' // Distinguishes swarm teammates, Agent tool subagents, and standalone agents
   teamName?: string // Team name for swarm agents (from env var or AsyncLocalStorage)
   subscriptionType?: string // OAuth subscription tier (max, pro, enterprise, team)
@@ -583,8 +583,8 @@ const buildEnvContext = memoize(async (): Promise<EnvContext> => {
     platform: getHostPlatformForAnalytics(),
     // Raw process.platform so freebsd/openbsd/aix/sunos are visible in BQ.
     // getHostPlatformForAnalytics() buckets those into 'linux'; here we want
-    // the truth. CLAUDE_CODE_HOST_PLATFORM still overrides for container/remote.
-    platformRaw: process.env.CLAUDE_CODE_HOST_PLATFORM || process.platform,
+    // the truth. KALT_CODE_HOST_PLATFORM still overrides for container/remote.
+    platformRaw: process.env.KALT_CODE_HOST_PLATFORM || process.platform,
     arch: env.arch,
     nodeVersion: env.nodeVersion,
     terminal: envDynamic.terminal,
@@ -593,29 +593,29 @@ const buildEnvContext = memoize(async (): Promise<EnvContext> => {
     isRunningWithBun: env.isRunningWithBun(),
     isCi: isEnvTruthy(process.env.CI),
     isClaubbit: isEnvTruthy(process.env.CLAUBBIT),
-    isClaudeCodeRemote: isEnvTruthy(process.env.CLAUDE_CODE_REMOTE),
-    isLocalAgentMode: process.env.CLAUDE_CODE_ENTRYPOINT === 'local-agent',
+    isClaudeCodeRemote: isEnvTruthy(process.env.KALT_CODE_REMOTE),
+    isLocalAgentMode: process.env.KALT_CODE_ENTRYPOINT === 'local-agent',
     isConductor: env.isConductor(),
-    ...(process.env.CLAUDE_CODE_REMOTE_ENVIRONMENT_TYPE && {
-      remoteEnvironmentType: process.env.CLAUDE_CODE_REMOTE_ENVIRONMENT_TYPE,
+    ...(process.env.KALT_CODE_REMOTE_ENVIRONMENT_TYPE && {
+      remoteEnvironmentType: process.env.KALT_CODE_REMOTE_ENVIRONMENT_TYPE,
     }),
     // Gated by feature flag to prevent leaking "coworkerType" string in external builds
     ...(feature('COWORKER_TYPE_TELEMETRY')
-      ? process.env.CLAUDE_CODE_COWORKER_TYPE
-        ? { coworkerType: process.env.CLAUDE_CODE_COWORKER_TYPE }
+      ? process.env.KALT_CODE_COWORKER_TYPE
+        ? { coworkerType: process.env.KALT_CODE_COWORKER_TYPE }
         : {}
       : {}),
-    ...(process.env.CLAUDE_CODE_CONTAINER_ID && {
-      claudeCodeContainerId: process.env.CLAUDE_CODE_CONTAINER_ID,
+    ...(process.env.KALT_CODE_CONTAINER_ID && {
+      claudeCodeContainerId: process.env.KALT_CODE_CONTAINER_ID,
     }),
-    ...(process.env.CLAUDE_CODE_REMOTE_SESSION_ID && {
-      claudeCodeRemoteSessionId: process.env.CLAUDE_CODE_REMOTE_SESSION_ID,
+    ...(process.env.KALT_CODE_REMOTE_SESSION_ID && {
+      claudeCodeRemoteSessionId: process.env.KALT_CODE_REMOTE_SESSION_ID,
     }),
-    ...(process.env.CLAUDE_CODE_TAGS && {
-      tags: process.env.CLAUDE_CODE_TAGS,
+    ...(process.env.KALT_CODE_TAGS && {
+      tags: process.env.KALT_CODE_TAGS,
     }),
     isGithubAction: isEnvTruthy(process.env.GITHUB_ACTIONS),
-    isClaudeCodeAction: isEnvTruthy(process.env.CLAUDE_CODE_ACTION),
+    isClaudeCodeAction: isEnvTruthy(process.env.KALT_CODE_ACTION),
     isClaudeAiAuth: isClaudeAISubscriber(),
     version: MACRO.VERSION,
     versionBase: getVersionBase(),
@@ -626,9 +626,9 @@ const buildEnvContext = memoize(async (): Promise<EnvContext> => {
       githubActionsRunnerEnvironment: process.env.RUNNER_ENVIRONMENT,
       githubActionsRunnerOs: process.env.RUNNER_OS,
       githubActionRef: process.env.GITHUB_ACTION_PATH?.includes(
-        'claude-code-action/',
+        'kalt-code-action/',
       )
-        ? process.env.GITHUB_ACTION_PATH.split('claude-code-action/')[1]
+        ? process.env.GITHUB_ACTION_PATH.split('kalt-code-action/')[1]
         : undefined,
     }),
     ...(getWslVersion() && { wslVersion: getWslVersion() }),
@@ -710,11 +710,11 @@ export async function getEventMetadata(
     userType: process.env.USER_TYPE || '',
     ...(betas.length > 0 ? { betas: betas } : {}),
     envContext,
-    ...(process.env.CLAUDE_CODE_ENTRYPOINT && {
-      entrypoint: process.env.CLAUDE_CODE_ENTRYPOINT,
+    ...(process.env.KALT_CODE_ENTRYPOINT && {
+      entrypoint: process.env.KALT_CODE_ENTRYPOINT,
     }),
-    ...(process.env.CLAUDE_AGENT_SDK_VERSION && {
-      agentSdkVersion: process.env.CLAUDE_AGENT_SDK_VERSION,
+    ...(process.env.KALT_CODE_AGENT_SDK_VERSION && {
+      agentSdkVersion: process.env.KALT_CODE_AGENT_SDK_VERSION,
     }),
     isInteractive: String(getIsInteractive()),
     clientType: getClientType(),
@@ -846,11 +846,11 @@ export function to1PEventFormat(
   if (feature('COWORKER_TYPE_TELEMETRY') && envContext.coworkerType) {
     env.coworker_type = envContext.coworkerType
   }
-  if (envContext.claudeCodeContainerId) {
-    env.claude_code_container_id = envContext.claudeCodeContainerId
+  if (envContext.kalt-codeCodeContainerId) {
+    env.kalt-code_code_container_id = envContext.kalt-codeCodeContainerId
   }
-  if (envContext.claudeCodeRemoteSessionId) {
-    env.claude_code_remote_session_id = envContext.claudeCodeRemoteSessionId
+  if (envContext.kalt-codeCodeRemoteSessionId) {
+    env.kalt-code_code_remote_session_id = envContext.kalt-codeCodeRemoteSessionId
   }
   if (envContext.tags) {
     env.tags = envContext.tags

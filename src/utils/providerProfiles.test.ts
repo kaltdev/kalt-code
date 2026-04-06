@@ -5,13 +5,13 @@ import type { ProviderProfile } from './config.js'
 const originalEnv = { ...process.env }
 
 const RESTORED_KEYS = [
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'KALT_CODE_PROVIDER_PROFILE_ENV_APPLIED',
+  'KALT_CODE_USE_OPENAI',
+  'KALT_CODE_USE_GEMINI',
+  'KALT_CODE_USE_GITHUB',
+  'KALT_CODE_USE_BEDROCK',
+  'KALT_CODE_USE_VERTEX',
+  'KALT_CODE_USE_FOUNDRY',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
   'OPENAI_MODEL',
@@ -76,22 +76,22 @@ async function importFreshProviderModules() {
 
 describe('applyProviderProfileToProcessEnv', () => {
   test('openai profile clears competing gemini/github flags', async () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.KALT_CODE_USE_GEMINI = '1'
+    process.env.KALT_CODE_USE_GITHUB = '1'
     const { applyProviderProfileToProcessEnv, getAPIProvider } =
       await importFreshProviderModules()
 
     applyProviderProfileToProcessEnv(buildProfile())
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.KALT_CODE_USE_GEMINI).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_GITHUB).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_OPENAI).toBe('1')
     expect(getAPIProvider()).toBe('openai')
   })
 
   test('anthropic profile clears competing gemini/github flags', async () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.KALT_CODE_USE_GEMINI = '1'
+    process.env.KALT_CODE_USE_GITHUB = '1'
     const { applyProviderProfileToProcessEnv, getAPIProvider } =
       await importFreshProviderModules()
 
@@ -103,16 +103,16 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_GEMINI).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_GITHUB).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_OPENAI).toBeUndefined()
     expect(getAPIProvider()).toBe('firstParty')
   })
 })
 
 describe('applyActiveProviderProfileFromConfig', () => {
   test('does not override explicit startup provider selection', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.KALT_CODE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
     const { applyActiveProviderProfileFromConfig } =
@@ -135,8 +135,8 @@ describe('applyActiveProviderProfileFromConfig', () => {
   })
 
   test('does not override explicit startup selection when profile marker is stale', async () => {
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.KALT_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+    process.env.KALT_CODE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
     const { applyActiveProviderProfileFromConfig } =
@@ -154,18 +154,18 @@ describe('applyActiveProviderProfileFromConfig', () => {
     } as any)
 
     expect(applied).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.KALT_CODE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:11434/v1')
     expect(process.env.OPENAI_MODEL).toBe('qwen2.5:3b')
   })
 
   test('applies active profile when no explicit provider is selected', async () => {
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_GITHUB
-    delete process.env.CLAUDE_CODE_USE_BEDROCK
-    delete process.env.CLAUDE_CODE_USE_VERTEX
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
+    delete process.env.KALT_CODE_USE_OPENAI
+    delete process.env.KALT_CODE_USE_GEMINI
+    delete process.env.KALT_CODE_USE_GITHUB
+    delete process.env.KALT_CODE_USE_BEDROCK
+    delete process.env.KALT_CODE_USE_VERTEX
+    delete process.env.KALT_CODE_USE_FOUNDRY
 
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
@@ -184,7 +184,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     } as any)
 
     expect(applied?.id).toBe('saved_openai')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.KALT_CODE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
   })
@@ -224,14 +224,14 @@ describe('deleteProviderProfile', () => {
     expect(result.removed).toBe(true)
     expect(result.activeProfileId).toBeUndefined()
 
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
+    expect(process.env.KALT_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_BEDROCK).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_VERTEX).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_FOUNDRY).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_GEMINI).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_GITHUB).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_BEDROCK).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_VERTEX).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_FOUNDRY).toBeUndefined()
 
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_BASE).toBeUndefined()
@@ -255,9 +255,9 @@ describe('deleteProviderProfile', () => {
 
     expect(profile).not.toBeNull()
 
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = undefined
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.KALT_CODE_PROVIDER_PROFILE_ENV_APPLIED = undefined
+    delete process.env.KALT_CODE_PROVIDER_PROFILE_ENV_APPLIED
+    process.env.KALT_CODE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
 
@@ -266,8 +266,8 @@ describe('deleteProviderProfile', () => {
     expect(result.removed).toBe(true)
     expect(result.activeProfileId).toBeUndefined()
 
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.KALT_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
+    expect(process.env.KALT_CODE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:11434/v1')
     expect(process.env.OPENAI_MODEL).toBe('qwen2.5:3b')
   })

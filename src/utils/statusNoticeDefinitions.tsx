@@ -64,7 +64,7 @@ const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
         <Text color="warning">
           Auth conflict: Using {authTokenInfo.source} instead of Claude account
           subscription token. Either unset {authTokenInfo.source}, or run
-          `claude /logout`.
+          `kalt-code /logout`.
         </Text>
       </Box>;
   }
@@ -90,7 +90,7 @@ const apiKeyConflictNotice: StatusNoticeDefinition = {
         <Text color="warning">{figures.warning}</Text>
         <Text color="warning">
           Auth conflict: Using {apiKeySource} instead of Anthropic Console key.
-          Either unset {apiKeySource}, or run `claude /logout`.
+          Either unset {apiKeySource}, or run `kalt-code /logout`.
         </Text>
       </Box>;
   }
@@ -127,11 +127,11 @@ const bothAuthMethodsNotice: StatusNoticeDefinition = {
             · Trying to use{' '}
             {authTokenInfo.source === 'claude.ai' ? 'claude.ai' : authTokenInfo.source}
             ?{' '}
-            {apiKeySource === 'ANTHROPIC_API_KEY' ? 'Unset the ANTHROPIC_API_KEY environment variable, or claude /logout then say "No" to the API key approval before login.' : apiKeySource === 'apiKeyHelper' ? 'Unset the apiKeyHelper setting.' : 'claude /logout'}
+            {apiKeySource === 'ANTHROPIC_API_KEY' ? 'Unset the ANTHROPIC_API_KEY environment variable, or kalt-code /logout then say "No" to the API key approval before login.' : apiKeySource === 'apiKeyHelper' ? 'Unset the apiKeyHelper setting.' : 'kalt-code /logout'}
           </Text>
           <Text color="warning">
             · Trying to use {apiKeySource}?{' '}
-            {authTokenInfo.source === 'claude.ai' ? 'claude /logout to sign out of claude.ai.' : `Unset the ${authTokenInfo.source} environment variable.`}
+            {authTokenInfo.source === 'claude.ai' ? 'kalt-code /logout to sign out of claude.ai.' : `Unset the ${authTokenInfo.source} environment variable.`}
           </Text>
         </Box>
       </Box>;
@@ -182,7 +182,7 @@ const jetbrainsPluginNotice: StatusNoticeDefinition = {
         <Text>
           Install the <Text color="ide">{ideName}</Text> plugin from the
           JetBrains Marketplace:{' '}
-          <Text bold>https://docs.claude.com/s/claude-code-jetbrains</Text>
+          <Text bold>https://docs.kalt-code.com/s/kalt-code-jetbrains</Text>
         </Text>
       </Box>;
   }

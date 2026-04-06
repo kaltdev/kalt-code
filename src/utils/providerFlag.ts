@@ -5,10 +5,10 @@
  * that the rest of the codebase uses for provider detection.
  *
  * Usage:
- *   openclaude --provider openai --model gpt-4o
- *   openclaude --provider gemini --model gemini-2.0-flash
- *   openclaude --provider ollama --model llama3.2
- *   openclaude --provider anthropic   (default, no-op)
+ *   kalt-code --provider openai --model gpt-4o
+ *   kalt-code --provider gemini --model gemini-2.0-flash
+ *   kalt-code --provider ollama --model llama3.2
+ *   kalt-code --provider anthropic   (default, no-op)
  */
 
 export const VALID_PROVIDERS = [
@@ -61,7 +61,7 @@ function parseModelFlag(args: string[]): string | null {
 
 /**
  * Apply a provider name to process.env.
- * Sets the required CLAUDE_CODE_USE_* flag and any provider-specific
+ * Sets the required KALT_CODE_USE_* flag and any provider-specific
  * defaults (Ollama base URL, model routing). Does NOT overwrite values
  * that are already set — explicit env vars always win.
  *
@@ -85,30 +85,30 @@ export function applyProviderFlag(
       break
 
     case 'openai':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.KALT_CODE_USE_OPENAI = '1'
       if (model) process.env.OPENAI_MODEL ??= model
       break
 
     case 'gemini':
-      process.env.CLAUDE_CODE_USE_GEMINI = '1'
+      process.env.KALT_CODE_USE_GEMINI = '1'
       if (model) process.env.GEMINI_MODEL ??= model
       break
 
     case 'github':
-      process.env.CLAUDE_CODE_USE_GITHUB = '1'
+      process.env.KALT_CODE_USE_GITHUB = '1'
       if (model) process.env.OPENAI_MODEL ??= model
       break
 
     case 'bedrock':
-      process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+      process.env.KALT_CODE_USE_BEDROCK = '1'
       break
 
     case 'vertex':
-      process.env.CLAUDE_CODE_USE_VERTEX = '1'
+      process.env.KALT_CODE_USE_VERTEX = '1'
       break
 
     case 'ollama':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.KALT_CODE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= 'http://localhost:11434/v1'
       process.env.OPENAI_API_KEY ??= 'ollama'
       if (model) process.env.OPENAI_MODEL ??= model

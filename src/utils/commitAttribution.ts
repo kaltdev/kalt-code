@@ -23,13 +23,13 @@ import { sequential } from './sequential.js'
  *
  * NOTE: This is intentionally a repo allowlist, not an org-wide check.
  * The anthropics and anthropic-experimental orgs contain PUBLIC repos
- * (e.g. anthropics/claude-code, anthropic-experimental/sandbox-runtime).
+ * (e.g. anthropics/kalt-code, anthropic-experimental/sandbox-runtime).
  * Undercover mode must stay ON in those to prevent codename leaks.
  * Only add repos here that are confirmed PRIVATE.
  */
 const INTERNAL_MODEL_REPOS = [
-  'github.com:anthropics/claude-cli-internal',
-  'github.com/anthropics/claude-cli-internal',
+  'github.com:anthropics/kalt-code-internal',
+  'github.com/anthropics/kalt-code-internal',
   'github.com:anthropics/anthropic',
   'github.com/anthropics/anthropic',
   'github.com:anthropics/apps',
@@ -227,7 +227,7 @@ export type AttributionData = {
  * Get the current client surface from environment.
  */
 export function getClientSurface(): string {
-  return process.env.CLAUDE_CODE_ENTRYPOINT ?? 'cli'
+  return process.env.KALT_CODE_ENTRYPOINT ?? 'cli'
 }
 
 /**
@@ -366,7 +366,7 @@ function computeFileModificationState(
 
     // Get current file state if it exists
     const existingState = existingFileStates.get(normalizedPath)
-    const existingContribution = existingState?.claudeContribution ?? 0
+    const existingContribution = existingState?.kalt-codeContribution ?? 0
 
     return {
       contentHash: computeContentHash(newContent),
@@ -423,7 +423,7 @@ export function trackFileModification(
   newFileStates.set(normalizedPath, newFileState)
 
   logForDebugging(
-    `Attribution: Tracked ${newFileState.claudeContribution} chars for ${normalizedPath}`,
+    `Attribution: Tracked ${newFileState.kalt-codeContribution} chars for ${normalizedPath}`,
   )
 
   return {
@@ -457,7 +457,7 @@ export function trackFileDeletion(
 ): AttributionState {
   const normalizedPath = normalizeFilePath(filePath)
   const existingState = state.fileStates.get(normalizedPath)
-  const existingContribution = existingState?.claudeContribution ?? 0
+  const existingContribution = existingState?.kalt-codeContribution ?? 0
   const deletedChars = oldContent.length
 
   const newFileState: FileAttributionState = {
@@ -470,7 +470,7 @@ export function trackFileDeletion(
   newFileStates.set(normalizedPath, newFileState)
 
   logForDebugging(
-    `Attribution: Tracked deletion of ${normalizedPath} (${deletedChars} chars removed, total contribution: ${newFileState.claudeContribution})`,
+    `Attribution: Tracked deletion of ${normalizedPath} (${deletedChars} chars removed, total contribution: ${newFileState.kalt-codeContribution})`,
   )
 
   return {
@@ -504,7 +504,7 @@ export function trackBulkFileChanges(
     if (change.type === 'deleted') {
       const normalizedPath = normalizeFilePath(change.path)
       const existingState = newFileStates.get(normalizedPath)
-      const existingContribution = existingState?.claudeContribution ?? 0
+      const existingContribution = existingState?.kalt-codeContribution ?? 0
       const deletedChars = change.oldContent.length
 
       newFileStates.set(normalizedPath, {
@@ -529,7 +529,7 @@ export function trackBulkFileChanges(
         newFileStates.set(normalizedPath, newFileState)
 
         logForDebugging(
-          `Attribution: Tracked ${newFileState.claudeContribution} chars for ${normalizedPath}`,
+          `Attribution: Tracked ${newFileState.kalt-codeContribution} chars for ${normalizedPath}`,
         )
       }
     }
@@ -605,7 +605,7 @@ export async function calculateCommitAttribution(
         mergedFileStates.set(path, {
           ...fileState,
           claudeContribution:
-            existing.claudeContribution + fileState.claudeContribution,
+            existing.kalt-codeContribution + fileState.kalt-codeContribution,
         })
       } else {
         mergedFileStates.set(path, fileState)
@@ -638,7 +638,7 @@ export async function calculateCommitAttribution(
         // File was deleted
         if (fileState) {
           // Claude deleted this file (tracked deletion)
-          claudeChars = fileState.claudeContribution
+          claudeChars = fileState.kalt-codeContribution
           humanChars = 0
         } else {
           // Human deleted this file (untracked deletion)
@@ -655,7 +655,7 @@ export async function calculateCommitAttribution(
 
           if (fileState) {
             // We have tracked modifications for this file
-            claudeChars = fileState.claudeContribution
+            claudeChars = fileState.kalt-codeContribution
             humanChars = 0
           } else if (baseline) {
             // File was modified but not tracked - human modification
@@ -699,17 +699,17 @@ export async function calculateCommitAttribution(
     }
 
     files[result.file] = {
-      claudeChars: result.claudeChars,
+      claudeChars: result.kalt-codeChars,
       humanChars: result.humanChars,
       percent: result.percent,
       surface: result.surface,
     }
 
-    totalClaudeChars += result.claudeChars
+    totalClaudeChars += result.kalt-codeChars
     totalHumanChars += result.humanChars
 
     surfaceCounts[result.surface] =
-      (surfaceCounts[result.surface] ?? 0) + result.claudeChars
+      (surfaceCounts[result.surface] ?? 0) + result.kalt-codeChars
   }
 
   const totalChars = totalClaudeChars + totalHumanChars

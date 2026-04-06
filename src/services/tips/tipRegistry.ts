@@ -239,11 +239,11 @@ const externalTips: Tip[] = [
   {
     id: 'powershell-tool-env',
     content: async () =>
-      'Set CLAUDE_CODE_USE_POWERSHELL_TOOL=1 to enable the PowerShell tool (preview)',
+      'Set KALT_CODE_USE_POWERSHELL_TOOL=1 to enable the PowerShell tool (preview)',
     cooldownSessions: 10,
     isRelevant: async () =>
       getPlatform() === 'windows' &&
-      process.env.CLAUDE_CODE_USE_POWERSHELL_TOOL === undefined,
+      process.env.KALT_CODE_USE_POWERSHELL_TOOL === undefined,
   },
   {
     id: 'status-line',
@@ -325,7 +325,7 @@ const externalTips: Tip[] = [
   {
     id: 'install-github-app',
     content: async () =>
-      'Run /install-github-app to tag @claude right from your Github issues and PRs',
+      'Run /install-github-app to tag @kalt-code right from your Github issues and PRs',
     cooldownSessions: 10,
     isRelevant: async () => !getGlobalConfig().githubActionSetupCount,
   },
@@ -355,7 +355,7 @@ const externalTips: Tip[] = [
   {
     id: 'paste-images-mac',
     content: async () =>
-      'Paste images into Claude Code using control+v (not cmd+v!)',
+      'Paste images into Kalt Code using control+v (not cmd+v!)',
     cooldownSessions: 10,
     isRelevant: async () => getPlatform() === 'macos',
   },
@@ -376,7 +376,7 @@ const externalTips: Tip[] = [
   {
     id: 'continue',
     content: async () =>
-      'Run claude --continue or claude --resume to resume a conversation',
+      'Run kalt-code --continue or kalt-code --resume to resume a conversation',
     cooldownSessions: 10,
     isRelevant: async () => true,
   },
@@ -391,7 +391,7 @@ const externalTips: Tip[] = [
   {
     id: 'custom-commands',
     content: async () =>
-      'Create skills by adding .md files to .claude/skills/ in your project or ~/.claude/skills/ for skills that work in any project',
+      'Create skills by adding .md files to .kalt-code/skills/ in your project or ~/.kalt-code/skills/ for skills that work in any project',
     cooldownSessions: 15,
     async isRelevant() {
       const config = getGlobalConfig()
@@ -437,7 +437,7 @@ const externalTips: Tip[] = [
   {
     id: 'desktop-app',
     content: async () =>
-      'Run Claude Code locally or remotely using the Claude desktop app: clau.de/desktop',
+      'Run Kalt Code locally or remotely using the Claude desktop app: clau.de/desktop',
     cooldownSessions: 15,
     isRelevant: async () => getPlatform() !== 'linux',
   },
@@ -445,7 +445,7 @@ const externalTips: Tip[] = [
     id: 'desktop-shortcut',
     content: async ctx => {
       const blue = color('suggestion', ctx.theme)
-      return `Continue your session in Claude Code Desktop with ${blue('/desktop')}`
+      return `Continue your session in Kalt Code Desktop with ${blue('/desktop')}`
     },
     cooldownSessions: 15,
     isRelevant: async () => {
@@ -466,7 +466,7 @@ const externalTips: Tip[] = [
   {
     id: 'mobile-app',
     content: async () =>
-      '/mobile to use Claude Code from the Claude app on your phone',
+      '/mobile to use Kalt Code from the Claude app on your phone',
     cooldownSessions: 15,
     isRelevant: async () => true,
   },
@@ -590,11 +590,11 @@ const externalTips: Tip[] = [
   {
     id: 'guest-passes',
     content: async ctx => {
-      const claude = color('claude', ctx.theme)
+      const kaltCode = color('claude', ctx.theme)
       const reward = getCachedReferrerReward()
       return reward
-        ? `Share Claude Code and earn ${claude(formatCreditAmount(reward))} of extra usage · ${claude('/passes')}`
-        : `You have free guest passes to share · ${claude('/passes')}`
+        ? `Share Kalt Code and earn ${kaltCode(formatCreditAmount(reward))} of extra usage · ${kaltCode('/passes')}`
+        : `You have free guest passes to share · ${kaltCode('/passes')}`
     },
     cooldownSessions: 3,
     isRelevant: async () => {
@@ -609,12 +609,12 @@ const externalTips: Tip[] = [
   {
     id: 'overage-credit',
     content: async ctx => {
-      const claude = color('claude', ctx.theme)
+      const kaltCode = color('claude', ctx.theme)
       const info = getCachedOverageCreditGrant()
       const amount = info ? formatGrantAmount(info) : null
       if (!amount) return ''
       // Copy from "OC & Bulk Overages copy" doc (#5 — CLI Rotating tip)
-      return `${claude(`${amount} in extra usage, on us`)} · third-party apps · ${claude('/extra-usage')}`
+      return `${kaltCode(`${amount} in extra usage, on us`)} · third-party apps · ${kaltCode('/extra-usage')}`
     },
     cooldownSessions: 3,
     isRelevant: async () => shouldShowOverageCreditUpsell(),
@@ -638,7 +638,7 @@ const internalOnlyTips: Tip[] =
         {
           id: 'important-claudemd',
           content: async () =>
-            '[internal] Use "IMPORTANT:" prefix for must-follow CLAUDE.md rules',
+            '[internal] Use "IMPORTANT:" prefix for must-follow KALT_CODE.md rules',
           cooldownSessions: 30,
           isRelevant: async () => true,
         },

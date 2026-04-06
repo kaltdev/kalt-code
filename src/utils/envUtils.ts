@@ -1,26 +1,17 @@
 import memoize from 'lodash-es/memoize.js'
-import { existsSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
 
-// Memoized: 150+ callers, many on hot paths. Keyed off CLAUDE_CONFIG_DIR so
+// Memoized: 150+ callers, many on hot paths. Keyed off KALT_CODE_CONFIG_DIR so
 // tests that change the env var get a fresh value without explicit cache.clear.
 export const getClaudeConfigHomeDir = memoize(
   (): string => {
-    if (process.env.CLAUDE_CONFIG_DIR) {
-      return process.env.CLAUDE_CONFIG_DIR.normalize('NFC')
+    if (process.env.KALT_CODE_CONFIG_DIR) {
+      return process.env.KALT_CODE_CONFIG_DIR.normalize('NFC')
     }
-    const newDefault = join(homedir(), '.openclaude')
-    // Migration compatibility: if ~/.openclaude doesn't exist yet but ~/.claude
-    // does, keep using ~/.claude so existing users don't lose their data on
-    // upgrade. New installs (neither dir exists) go straight to ~/.openclaude.
-    const legacyPath = join(homedir(), '.claude')
-    if (!existsSync(newDefault) && existsSync(legacyPath)) {
-      return legacyPath.normalize('NFC')
-    }
-    return newDefault.normalize('NFC')
+    return join(homedir(), '.kalt-code').normalize('NFC')
   },
-  () => process.env.CLAUDE_CONFIG_DIR,
+  () => process.env.KALT_CODE_CONFIG_DIR,
 )
 
 export function getTeamsDir(): string {
@@ -57,19 +48,19 @@ export function isEnvDefinedFalsy(
 }
 
 /**
- * --bare / CLAUDE_CODE_SIMPLE — skip hooks, LSP, plugin sync, skill dir-walk,
+ * --bare / KALT_CODE_SIMPLE — skip hooks, LSP, plugin sync, skill dir-walk,
  * attribution, background prefetches, and ALL keychain/credential reads.
  * Auth is strictly ANTHROPIC_API_KEY env or apiKeyHelper from --settings.
  * Explicit CLI flags (--plugin-dir, --add-dir, --mcp-config) still honored.
  * ~30 gates across the codebase.
  *
  * Checks argv directly (in addition to the env var) because several gates
- * run before main.tsx's action handler sets CLAUDE_CODE_SIMPLE=1 from --bare
+ * run before main.tsx's action handler sets KALT_CODE_SIMPLE=1 from --bare
  * — notably startKeychainPrefetch() at main.tsx top-level.
  */
 export function isBareMode(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
+    isEnvTruthy(process.env.KALT_CODE_SIMPLE) ||
     process.argv.includes('--bare')
   )
 }
@@ -116,10 +107,10 @@ export function getDefaultVertexRegion(): string {
 
 /**
  * Check if bash commands should maintain project working directory (reset to original after each command)
- * @returns true if CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR is set to a truthy value
+ * @returns true if KALT_CODE_BASH_MAINTAIN_PROJECT_WORKING_DIR is set to a truthy value
  */
 export function shouldMaintainProjectWorkingDir(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR)
+  return isEnvTruthy(process.env.KALT_CODE_BASH_MAINTAIN_PROJECT_WORKING_DIR)
 }
 
 /**
@@ -133,7 +124,7 @@ export function isRunningOnHomespace(): boolean {
 }
 
 /**
- * Conservative check for whether Claude Code is running inside a protected
+ * Conservative check for whether Kalt Code is running inside a protected
  * (privileged or ASL3+) COO namespace or cluster.
  *
  * Conservative means: when signals are ambiguous, assume protected. We would
@@ -163,15 +154,15 @@ export function isInProtectedNamespace(): boolean {
  * (e.g., 'claude-opus-4-1' before 'claude-opus-4').
  */
 const VERTEX_REGION_OVERRIDES: ReadonlyArray<[string, string]> = [
-  ['claude-haiku-4-5', 'VERTEX_REGION_CLAUDE_HAIKU_4_5'],
-  ['claude-3-5-haiku', 'VERTEX_REGION_CLAUDE_3_5_HAIKU'],
-  ['claude-3-5-sonnet', 'VERTEX_REGION_CLAUDE_3_5_SONNET'],
-  ['claude-3-7-sonnet', 'VERTEX_REGION_CLAUDE_3_7_SONNET'],
-  ['claude-opus-4-1', 'VERTEX_REGION_CLAUDE_4_1_OPUS'],
-  ['claude-opus-4', 'VERTEX_REGION_CLAUDE_4_0_OPUS'],
-  ['claude-sonnet-4-6', 'VERTEX_REGION_CLAUDE_4_6_SONNET'],
-  ['claude-sonnet-4-5', 'VERTEX_REGION_CLAUDE_4_5_SONNET'],
-  ['claude-sonnet-4', 'VERTEX_REGION_CLAUDE_4_0_SONNET'],
+  ['claude-haiku-4-5', 'VERTEX_REGION_KALT_CODE_HAIKU_4_5'],
+  ['claude-3-5-haiku', 'VERTEX_REGION_KALT_CODE_3_5_HAIKU'],
+  ['claude-3-5-sonnet', 'VERTEX_REGION_KALT_CODE_3_5_SONNET'],
+  ['claude-3-7-sonnet', 'VERTEX_REGION_KALT_CODE_3_7_SONNET'],
+  ['claude-opus-4-1', 'VERTEX_REGION_KALT_CODE_4_1_OPUS'],
+  ['claude-opus-4', 'VERTEX_REGION_KALT_CODE_4_0_OPUS'],
+  ['claude-sonnet-4-6', 'VERTEX_REGION_KALT_CODE_4_6_SONNET'],
+  ['claude-sonnet-4-5', 'VERTEX_REGION_KALT_CODE_4_5_SONNET'],
+  ['claude-sonnet-4', 'VERTEX_REGION_KALT_CODE_4_0_SONNET'],
 ]
 
 /**

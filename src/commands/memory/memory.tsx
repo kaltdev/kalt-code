@@ -20,7 +20,7 @@ function MemoryCommand({
 }): React.ReactNode {
   const handleSelectMemoryFile = async (memoryPath: string) => {
     try {
-      // Create claude directory if it doesn't exist (idempotent with recursive)
+      // Create kalt-code directory if it doesn't exist (idempotent with recursive)
       if (memoryPath.includes(getClaudeConfigHomeDir())) {
         await mkdir(getClaudeConfigHomeDir(), {
           recursive: true
@@ -74,7 +74,7 @@ function MemoryCommand({
 
         <Box marginTop={1}>
           <Text dimColor>
-            Learn more: <Link url="https://code.claude.com/docs/en/memory" />
+            Learn more: <Link url="https://code.kalt-code.com/docs/en/memory" />
           </Text>
         </Box>
       </Box>

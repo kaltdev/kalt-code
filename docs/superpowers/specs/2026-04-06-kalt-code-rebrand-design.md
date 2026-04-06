@@ -5,21 +5,19 @@ Status: Approved design, pending implementation
 
 ## Goal
 
-Fully rebrand the project from `OpenClaude` to `Kalt Code` and replace the old owner username `Gitlawb` with `kaltdev` across the entire repository, with no compatibility aliases left behind.
+Fully rebrand the project from the legacy project identity to `Kalt Code` and replace the legacy owner username with `kaltdev` across the entire repository, with no compatibility aliases left behind.
 
 This includes branding text, commands, package names, environment variables, filenames, repository URLs, asset names, extension metadata, tests, comments, and generated or hidden checked-in files.
 
 ## Required Replacements
 
-Apply these replacements everywhere they are semantically part of the project identity:
+Apply the approved branding replacements everywhere they are semantically part of the project identity:
 
-- `OpenClaude` -> `Kalt Code`
-- `openclaude` -> `kalt-code`
-- `OPENCLAUDE` -> `KALT_CODE`
-- `open-claude` -> `kalt-code`
-- `open_claude` -> `kalt_code`
-- `Gitlawb` -> `kaltdev`
-- old-owner URL segments -> `kaltdev`
+- Product display name -> `Kalt Code`
+- Kebab-case product identifier -> `kalt-code`
+- Upper snake-case product identifier -> `KALT_CODE`
+- Snake-case product identifier -> `kalt_code`
+- Owner username and URL segments -> `kaltdev`
 
 ## Scope
 
@@ -56,7 +54,7 @@ Reasons:
 ## Execution Plan
 
 1. Inventory all path names and checked-in assets containing the old brand.
-2. Rename files and directories that encode `openclaude` in their path.
+2. Rename files and directories that encode the legacy product identifier in their path.
 3. Apply repository-wide text replacements for the approved mapping.
 4. Perform targeted cleanup where direct replacement can produce invalid or incomplete results.
 5. Run verification searches for old brand and owner references.
@@ -80,7 +78,7 @@ These locations need focused review after bulk replacement:
 
 Validation is complete only when all of the following are true:
 
-- Zero occurrences remain for `OpenClaude`, `openclaude`, `OPENCLAUDE`, `open-claude`, and `open_claude`
+- Zero occurrences remain for the legacy product identifiers in display, kebab-case, upper snake-case, and snake-case forms
 - Zero occurrences remain for the old owner username
 - Repository URLs point to `github.com/kaltdev/kalt-code` where GitHub URLs are expected
 - Primary package metadata reflects the new name and owner
