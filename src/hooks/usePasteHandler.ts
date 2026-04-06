@@ -11,17 +11,10 @@ import {
 } from '../utils/imagePaste.js'
 import type { ImageDimensions } from '../utils/imageResizer.js'
 import { getPlatform } from '../utils/platform.js'
+import { supportsClipboardImageFallback } from './supportsClipboardImageFallback.js'
 
 const CLIPBOARD_CHECK_DEBOUNCE_MS = 50
 const PASTE_COMPLETION_TIMEOUT_MS = 100
-
-export function supportsClipboardImageFallback(
-  platform: ReturnType<typeof getPlatform>,
-): boolean {
-  return (
-    platform === 'macos' || platform === 'windows' || platform === 'linux'
-  )
-}
 
 type PasteHandlerProps = {
   onPaste?: (text: string) => void

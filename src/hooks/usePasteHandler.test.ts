@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { supportsClipboardImageFallback } from './usePasteHandler.ts'
+import { supportsClipboardImageFallback } from './supportsClipboardImageFallback.ts'
 
 test('supports clipboard image fallback on Windows', () => {
   expect(supportsClipboardImageFallback('windows')).toBe(true)
