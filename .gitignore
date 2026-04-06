@@ -6,4 +6,7 @@ dist/
 !.env.example
 .kalt-code-profile.json
 reports/
+GEMINI.md
+package-lock.json
+/.claude
 coverage/
