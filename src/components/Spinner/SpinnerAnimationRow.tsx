@@ -210,6 +210,7 @@ export function SpinnerAnimationRow({
     // parensWidth = 3 accounts for " (" and ")" wrapping the status parts.
     // The extra 1 is a safety margin so content never touches the right edge.
     const messageWidth = glimmerMessageWidth + 2;
+    const parensWidth = 3;
     const sep = SEP_WIDTH;
     const wantsThinking = thinkingStatus !== null;
     const wantsTimerAndTokens =

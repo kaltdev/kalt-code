@@ -221,6 +221,19 @@ test('gpt-5.5 uses conservative Codex-route context window (issue #1118)', () =>
   expect(getContextWindowForModel('gpt-5.5')).toBe(272_000)
 })
 
+test('codexplan alias uses gpt-5.5 context metadata', () => {
+  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.OPENAI_BASE_URL = 'https://chatgpt.com/backend-api/codex'
+  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.OPENAI_MODEL
+
+  expect(getContextWindowForModel('codexplan')).toBe(272_000)
+  expect(getModelMaxOutputTokens('codexplan')).toEqual({
+    default: 128_000,
+    upperLimit: 128_000,
+  })
+})
+
 test("gpt-5.4 family uses provider-specific context and output caps", () => {
     process.env.CLAUDE_CODE_USE_OPENAI = "1";
     delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS;

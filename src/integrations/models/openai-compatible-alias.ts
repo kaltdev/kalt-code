@@ -36,6 +36,7 @@ function aliasModel(
 }
 
 const aliasModels: readonly AliasModel[] = [
+  ['codexplan', 'Codex Plan (GPT-5.5)', 272_000, 128_000],
   ['github:copilot', 'GitHub Copilot', 128_000, 16_384],
   ['github:copilot:claude-sonnet-4', 'GitHub Copilot Claude Sonnet 4', 216_000, 16_000],
   ['github:copilot:claude-haiku-4', 'GitHub Copilot Claude Haiku 4', 200_000, 64_000],
