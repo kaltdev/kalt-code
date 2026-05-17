@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.13.0](https://github.com/kaltdev/kaltcode/compare/v0.12.0...v0.13.0) (2026-05-17)
+
+
+### Features
+
+* **openaiShim:** Parse Gemini raw tool-call text ([a312c31](https://github.com/kaltdev/kaltcode/commit/a312c311c2086289c871f6e6d3d77d6e3f30c225))
+
+
+### Bug Fixes
+
+* **bash:** cap subcommand fanout in auto-allow ([48ebbe8](https://github.com/kaltdev/kaltcode/commit/48ebbe835d0d886a7ad669d3abed90c531a92d48))
+* harden knowledge graph reset cleanup ([42ae535](https://github.com/kaltdev/kaltcode/commit/42ae53541bd5d6e0725754401ebfe6e5ef01576a))
+* **websearch:** surface adapter errors and hints ([1654791](https://github.com/kaltdev/kaltcode/commit/16547917797118e764dc2aaea2dec17299d943f4))
+
 ## [0.12.0](https://github.com/kaltdev/kaltcode/compare/v0.11.0...v0.12.0) (2026-05-16)
 
 
