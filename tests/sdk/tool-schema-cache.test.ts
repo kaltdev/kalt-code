@@ -1,13 +1,26 @@
-import { describe, test, expect, beforeEach } from 'bun:test'
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
 import {
   getToolSchemaCache,
   clearToolSchemaCache,
   invalidateRemovedToolSchemas,
 } from '../../src/utils/toolSchemaCache.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../src/test/sharedMutationLock.js'
 
 describe('invalidateRemovedToolSchemas', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await acquireSharedMutationLock('tests/sdk/tool-schema-cache.test.ts')
     clearToolSchemaCache()
+  })
+
+  afterEach(() => {
+    try {
+      clearToolSchemaCache()
+    } finally {
+      releaseSharedMutationLock()
+    }
   })
 
   test('removes entries for tools not in retained set', () => {

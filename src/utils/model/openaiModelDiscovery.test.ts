@@ -1,5 +1,9 @@
-import { afterEach, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, expect, mock, test } from "bun:test";
 import axios from "axios";
+import {
+    acquireSharedMutationLock,
+    releaseSharedMutationLock,
+} from "../../test/sharedMutationLock.js";
 
 const originalEnv = {
     KALT_CODE_DISABLE_NONESSENTIAL_TRAFFIC:
@@ -17,15 +21,23 @@ function restoreEnv(key: string, value: string | undefined): void {
     }
 }
 
+beforeEach(async () => {
+    await acquireSharedMutationLock("src/utils/model/openaiModelDiscovery.test.ts");
+});
+
 afterEach(() => {
-    mock.restore();
-    restoreEnv(
-        "KALT_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
-        originalEnv.KALT_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
-    );
-    restoreEnv("CLAUDE_CODE_USE_OPENAI", originalEnv.CLAUDE_CODE_USE_OPENAI);
-    restoreEnv("OPENAI_BASE_URL", originalEnv.OPENAI_BASE_URL);
-    restoreEnv("OPENAI_MODEL", originalEnv.OPENAI_MODEL);
+    try {
+        mock.restore();
+        restoreEnv(
+            "KALT_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+            originalEnv.KALT_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+        );
+        restoreEnv("CLAUDE_CODE_USE_OPENAI", originalEnv.CLAUDE_CODE_USE_OPENAI);
+        restoreEnv("OPENAI_BASE_URL", originalEnv.OPENAI_BASE_URL);
+        restoreEnv("OPENAI_MODEL", originalEnv.OPENAI_MODEL);
+    } finally {
+        releaseSharedMutationLock();
+    }
 });
 
 test("skips legacy OpenAI-compatible model discovery when nonessential traffic is disabled", async () => {

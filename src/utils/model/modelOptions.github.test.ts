@@ -7,6 +7,10 @@ import {
   resetSettingsCache,
   setSessionSettingsCache,
 } from '../settings/settingsCache.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../test/sharedMutationLock.js'
 
 async function importFreshModelOptionsModule() {
   mock.restore()
@@ -44,7 +48,8 @@ function restoreEnvValue(
   }
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await acquireSharedMutationLock('src/utils/model/modelOptions.github.test.ts')
   mock.restore()
   setSessionSettingsCache({ settings: {}, errors: [] })
   delete process.env.CLAUDE_CODE_USE_GITHUB
@@ -60,27 +65,31 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  mock.restore()
-  resetSettingsCache()
-  restoreEnvValue('CLAUDE_CODE_USE_GITHUB')
-  restoreEnvValue('CLAUDE_CODE_USE_OPENAI')
-  restoreEnvValue('CLAUDE_CODE_USE_GEMINI')
-  restoreEnvValue('CLAUDE_CODE_USE_BEDROCK')
-  restoreEnvValue('CLAUDE_CODE_USE_VERTEX')
-  restoreEnvValue('CLAUDE_CODE_USE_FOUNDRY')
-  restoreEnvValue('OPENAI_MODEL')
-  restoreEnvValue('OPENAI_BASE_URL')
-  restoreEnvValue('ANTHROPIC_CUSTOM_MODEL_OPTION')
-  saveGlobalConfig(current => ({
-    ...current,
-    additionalModelOptionsCache: [],
-    additionalModelOptionsCacheScope: undefined,
-    openaiAdditionalModelOptionsCache: [],
-    openaiAdditionalModelOptionsCacheByProfile: {},
-    providerProfiles: [],
-    activeProviderProfileId: undefined,
-  }))
-  resetModelStringsForTestingOnly()
+  try {
+    mock.restore()
+    resetSettingsCache()
+    restoreEnvValue('CLAUDE_CODE_USE_GITHUB')
+    restoreEnvValue('CLAUDE_CODE_USE_OPENAI')
+    restoreEnvValue('CLAUDE_CODE_USE_GEMINI')
+    restoreEnvValue('CLAUDE_CODE_USE_BEDROCK')
+    restoreEnvValue('CLAUDE_CODE_USE_VERTEX')
+    restoreEnvValue('CLAUDE_CODE_USE_FOUNDRY')
+    restoreEnvValue('OPENAI_MODEL')
+    restoreEnvValue('OPENAI_BASE_URL')
+    restoreEnvValue('ANTHROPIC_CUSTOM_MODEL_OPTION')
+    saveGlobalConfig(current => ({
+      ...current,
+      additionalModelOptionsCache: [],
+      additionalModelOptionsCacheScope: undefined,
+      openaiAdditionalModelOptionsCache: [],
+      openaiAdditionalModelOptionsCacheByProfile: {},
+      providerProfiles: [],
+      activeProviderProfileId: undefined,
+    }))
+    resetModelStringsForTestingOnly()
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 test('GitHub provider exposes default + all Copilot models in /model options', async () => {

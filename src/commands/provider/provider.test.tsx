@@ -1,6 +1,6 @@
 import { PassThrough } from "node:stream";
 
-import { afterEach, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, expect, mock, test } from "bun:test";
 import React from "react";
 import stripAnsi from "strip-ansi";
 
@@ -17,6 +17,10 @@ import {
     TextEntryDialog,
 } from "./provider.js";
 import { createProfileFile } from "../../utils/providerProfile.js";
+import {
+    acquireSharedMutationLock,
+    releaseSharedMutationLock,
+} from "../../test/sharedMutationLock.js";
 
 const SYNC_START = "\x1B[?2026h";
 const SYNC_END = "\x1B[?2026l";
@@ -155,31 +159,41 @@ function createTestStreams(): {
     };
 }
 
+beforeEach(async () => {
+    await acquireSharedMutationLock("commands/provider/provider.test.tsx");
+});
+
 afterEach(() => {
-    mock.restore();
+    try {
+        try {
+            mock.restore();
+        } finally {
+            if (ORIGINAL_SIMPLE_ENV === undefined) {
+                delete process.env.CLAUDE_CODE_SIMPLE;
+            } else {
+                process.env.CLAUDE_CODE_SIMPLE = ORIGINAL_SIMPLE_ENV;
+            }
 
-    if (ORIGINAL_SIMPLE_ENV === undefined) {
-        delete process.env.CLAUDE_CODE_SIMPLE;
-    } else {
-        process.env.CLAUDE_CODE_SIMPLE = ORIGINAL_SIMPLE_ENV;
-    }
+            if (ORIGINAL_CODEX_API_KEY === undefined) {
+                delete process.env.CODEX_API_KEY;
+            } else {
+                process.env.CODEX_API_KEY = ORIGINAL_CODEX_API_KEY;
+            }
 
-    if (ORIGINAL_CODEX_API_KEY === undefined) {
-        delete process.env.CODEX_API_KEY;
-    } else {
-        process.env.CODEX_API_KEY = ORIGINAL_CODEX_API_KEY;
-    }
+            if (ORIGINAL_CHATGPT_ACCOUNT_ID === undefined) {
+                delete process.env.CHATGPT_ACCOUNT_ID;
+            } else {
+                process.env.CHATGPT_ACCOUNT_ID = ORIGINAL_CHATGPT_ACCOUNT_ID;
+            }
 
-    if (ORIGINAL_CHATGPT_ACCOUNT_ID === undefined) {
-        delete process.env.CHATGPT_ACCOUNT_ID;
-    } else {
-        process.env.CHATGPT_ACCOUNT_ID = ORIGINAL_CHATGPT_ACCOUNT_ID;
-    }
-
-    if (ORIGINAL_CODEX_ACCOUNT_ID === undefined) {
-        delete process.env.CODEX_ACCOUNT_ID;
-    } else {
-        process.env.CODEX_ACCOUNT_ID = ORIGINAL_CODEX_ACCOUNT_ID;
+            if (ORIGINAL_CODEX_ACCOUNT_ID === undefined) {
+                delete process.env.CODEX_ACCOUNT_ID;
+            } else {
+                process.env.CODEX_ACCOUNT_ID = ORIGINAL_CODEX_ACCOUNT_ID;
+            }
+        }
+    } finally {
+        releaseSharedMutationLock();
     }
 });
 

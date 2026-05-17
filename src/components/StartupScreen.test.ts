@@ -1,7 +1,5 @@
 import {
-    afterAll,
     afterEach,
-    beforeAll,
     beforeEach,
     describe,
     expect,
@@ -11,17 +9,6 @@ import {
 
 const actualSettings = await import("../utils/settings/settings.js");
 
-beforeAll(() => {
-    mock.module("../utils/settings/settings.js", () => ({
-        ...actualSettings,
-        getSettings_DEPRECATED: () => ({}),
-    }));
-});
-
-afterAll(() => {
-    mock.restore();
-});
-
 import stripAnsi from "strip-ansi";
 import { detectProvider, printStartupScreen } from "./StartupScreen.js";
 import { saveGlobalConfig } from "../utils/config.js";
@@ -29,6 +16,10 @@ import {
     resetSettingsCache,
     setSessionSettingsCache,
 } from "../utils/settings/settingsCache.js";
+import {
+    acquireSharedMutationLock,
+    releaseSharedMutationLock,
+} from "../test/sharedMutationLock.js";
 
 const ENV_KEYS = [
     "CI",
@@ -55,11 +46,20 @@ const ENV_KEYS = [
 ];
 
 const originalEnv: Record<string, string | undefined> = {};
+const hadOriginalMacro = Object.prototype.hasOwnProperty.call(
+    globalThis,
+    "MACRO",
+);
 const originalMacro = (globalThis as Record<string, unknown>).MACRO;
 const originalIsTTY = process.stdout.isTTY;
 const originalWrite = process.stdout.write;
 
-beforeEach(() => {
+beforeEach(async () => {
+    await acquireSharedMutationLock("components/StartupScreen.test.ts");
+    mock.module("../utils/settings/settings.js", () => ({
+        ...actualSettings,
+        getSettings_DEPRECATED: () => ({}),
+    }));
     for (const key of ENV_KEYS) {
         originalEnv[key] = process.env[key];
         delete process.env[key];
@@ -72,23 +72,35 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    resetSettingsCache();
-    saveGlobalConfig((current) => ({
-        ...current,
-        model: undefined,
-    }));
-    (globalThis as Record<string, unknown>).MACRO = originalMacro;
-    Object.defineProperty(process.stdout, "isTTY", {
-        configurable: true,
-        value: originalIsTTY,
-    });
-    process.stdout.write = originalWrite;
-    for (const key of ENV_KEYS) {
-        if (originalEnv[key] === undefined) {
-            delete process.env[key];
-        } else {
-            process.env[key] = originalEnv[key];
+    try {
+        try {
+            mock.restore();
+        } finally {
+            resetSettingsCache();
+            saveGlobalConfig((current) => ({
+                ...current,
+                model: undefined,
+            }));
+            if (hadOriginalMacro) {
+                (globalThis as Record<string, unknown>).MACRO = originalMacro;
+            } else {
+                delete (globalThis as Record<string, unknown>).MACRO;
+            }
+            Object.defineProperty(process.stdout, "isTTY", {
+                configurable: true,
+                value: originalIsTTY,
+            });
+            process.stdout.write = originalWrite;
+            for (const key of ENV_KEYS) {
+                if (originalEnv[key] === undefined) {
+                    delete process.env[key];
+                } else {
+                    process.env[key] = originalEnv[key];
+                }
+            }
         }
+    } finally {
+        releaseSharedMutationLock();
     }
 });
 

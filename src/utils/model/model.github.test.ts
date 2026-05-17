@@ -2,6 +2,10 @@ import { afterEach, beforeEach, expect, test } from 'bun:test'
 
 import { saveGlobalConfig } from '../config.js'
 import { getDefaultMainLoopModelSetting, getUserSpecifiedModelSetting } from './model.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../test/sharedMutationLock.js'
 
 const env = {
   CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
@@ -13,7 +17,17 @@ const env = {
   OPENAI_MODEL: process.env.OPENAI_MODEL,
 }
 
-beforeEach(() => {
+function restoreEnvValue(key: keyof typeof env): void {
+  const value = env[key]
+  if (value === undefined) {
+    delete process.env[key]
+  } else {
+    process.env[key] = value
+  }
+}
+
+beforeEach(async () => {
+  await acquireSharedMutationLock('src/utils/model/model.github.test.ts')
   process.env.CLAUDE_CODE_USE_GITHUB = '1'
   delete process.env.CLAUDE_CODE_USE_OPENAI
   delete process.env.CLAUDE_CODE_USE_GEMINI
@@ -28,17 +42,21 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  process.env.CLAUDE_CODE_USE_GITHUB = env.CLAUDE_CODE_USE_GITHUB
-  process.env.CLAUDE_CODE_USE_OPENAI = env.CLAUDE_CODE_USE_OPENAI
-  process.env.CLAUDE_CODE_USE_GEMINI = env.CLAUDE_CODE_USE_GEMINI
-  process.env.CLAUDE_CODE_USE_BEDROCK = env.CLAUDE_CODE_USE_BEDROCK
-  process.env.CLAUDE_CODE_USE_VERTEX = env.CLAUDE_CODE_USE_VERTEX
-  process.env.CLAUDE_CODE_USE_FOUNDRY = env.CLAUDE_CODE_USE_FOUNDRY
-  process.env.OPENAI_MODEL = env.OPENAI_MODEL
-  saveGlobalConfig(current => ({
-    ...current,
-    model: undefined,
-  }))
+  try {
+    restoreEnvValue('CLAUDE_CODE_USE_GITHUB')
+    restoreEnvValue('CLAUDE_CODE_USE_OPENAI')
+    restoreEnvValue('CLAUDE_CODE_USE_GEMINI')
+    restoreEnvValue('CLAUDE_CODE_USE_BEDROCK')
+    restoreEnvValue('CLAUDE_CODE_USE_VERTEX')
+    restoreEnvValue('CLAUDE_CODE_USE_FOUNDRY')
+    restoreEnvValue('OPENAI_MODEL')
+    saveGlobalConfig(current => ({
+      ...current,
+      model: undefined,
+    }))
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 test('github default model setting ignores non-string saved model', () => {

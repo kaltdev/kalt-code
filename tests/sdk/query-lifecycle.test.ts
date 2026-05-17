@@ -1,4 +1,4 @@
-import { describe, test, expect, afterEach, beforeAll, afterAll } from 'bun:test'
+import { describe, test, expect, afterEach, beforeEach } from 'bun:test'
 import { query, forkSession, getSessionMessages, unstable_v2_createSession } from '../../src/entrypoints/sdk/index.js'
 import { randomUUID } from 'crypto'
 import { rmSync } from 'fs'
@@ -10,24 +10,30 @@ import {
   createMultiTurnConversation,
   UUID_REGEX,
 } from './helpers/query-test-doubles.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../src/test/sharedMutationLock.js'
 
 // Tests that drain fully (no early interrupt) trigger init(), which checks
 // for auth credentials. Provide a stub key so init() succeeds without network.
 const AUTH_KEY = 'ANTHROPIC_API_KEY'
-let savedApiKey: string | undefined
+const originalApiKey = process.env[AUTH_KEY]
 
-beforeAll(() => {
-  savedApiKey = process.env[AUTH_KEY]
-  if (!savedApiKey) {
-    process.env[AUTH_KEY] = 'sk-test-lifecycle-stub'
-  }
+beforeEach(async () => {
+  await acquireSharedMutationLock('tests/sdk/query-lifecycle.test.ts')
+  process.env[AUTH_KEY] = originalApiKey ?? 'sk-test-lifecycle-stub'
 })
 
-afterAll(() => {
-  if (savedApiKey === undefined) {
-    delete process.env[AUTH_KEY]
-  } else {
-    process.env[AUTH_KEY] = savedApiKey
+afterEach(() => {
+  try {
+    if (originalApiKey === undefined) {
+      delete process.env[AUTH_KEY]
+    } else {
+      process.env[AUTH_KEY] = originalApiKey
+    }
+  } finally {
+    releaseSharedMutationLock()
   }
 })
 

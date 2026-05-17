@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { call as knowledgeCall } from "./knowledge.js";
 import { getGlobalConfig, saveGlobalConfig } from "../../utils/config.js";
 import { getArc, addEntity, resetArc } from "../../utils/conversationArc.js";
@@ -6,24 +6,28 @@ import {
     getGlobalGraph,
     resetGlobalGraph,
 } from "../../utils/knowledgeGraph.js";
+import {
+    acquireSharedMutationLock,
+    releaseSharedMutationLock,
+} from "../../test/sharedMutationLock.js";
 
 describe("knowledge command", () => {
     const mockContext = {} as any;
+    let hadOriginalKnowledgeGraphEnabled = false;
+    let originalKnowledgeGraphEnabled: boolean | undefined;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        await acquireSharedMutationLock("commands/knowledge/knowledge.test.ts");
+        const config = getGlobalConfig();
+        hadOriginalKnowledgeGraphEnabled =
+            Object.prototype.hasOwnProperty.call(
+                config,
+                "knowledgeGraphEnabled",
+            );
+        originalKnowledgeGraphEnabled = config.knowledgeGraphEnabled;
         resetArc();
         resetGlobalGraph();
-    });
 
-    const knowledgeCallWithCapture = async (args: string) => {
-        const result = await knowledgeCall(args, mockContext);
-        if (result.type === "text") {
-            return result.value;
-        }
-        return "";
-    };
-
-    beforeEach(() => {
         // Attempt to reset config - even if mocked, we try to set our key
         try {
             saveGlobalConfig((current) => ({
@@ -35,6 +39,37 @@ describe("knowledge command", () => {
         }
         resetArc();
     });
+
+    afterEach(() => {
+        try {
+            try {
+                saveGlobalConfig((current) => {
+                    const next = { ...current };
+                    if (hadOriginalKnowledgeGraphEnabled) {
+                        next.knowledgeGraphEnabled =
+                            originalKnowledgeGraphEnabled;
+                    } else {
+                        delete next.knowledgeGraphEnabled;
+                    }
+                    return next;
+                });
+            } catch {
+                // Ignore if config is heavily mocked
+            }
+            resetArc();
+            resetGlobalGraph();
+        } finally {
+            releaseSharedMutationLock();
+        }
+    });
+
+    const knowledgeCallWithCapture = async (args: string) => {
+        const result = await knowledgeCall(args, mockContext);
+        if (result.type === "text") {
+            return result.value;
+        }
+        return "";
+    };
 
     it("enables and disables knowledge graph engine", async () => {
         // Test Disable

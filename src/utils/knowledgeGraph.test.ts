@@ -47,14 +47,24 @@ describe("KnowledgeGraph Global Persistence & RAG", () => {
     afterEach(() => {
         try {
             resetGlobalGraph();
-            if (originalConfigDir === undefined) {
-                delete process.env.CLAUDE_CONFIG_DIR;
-            } else {
-                process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
-            }
-            rmSync(configDir, { recursive: true, force: true });
         } finally {
-            releaseSharedMutationLock();
+            try {
+                if (originalConfigDir === undefined) {
+                    delete process.env.CLAUDE_CONFIG_DIR;
+                } else {
+                    process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
+                }
+            } finally {
+                const dirToRemove = configDir;
+                configDir = "";
+                try {
+                    if (dirToRemove) {
+                        rmSync(dirToRemove, { recursive: true, force: true });
+                    }
+                } finally {
+                    releaseSharedMutationLock();
+                }
+            }
         }
     });
 

@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
-import { createOpenAIShimClient } from "./openaiShim.js";
 import {
     acquireSharedMutationLock,
     releaseSharedMutationLock,
 } from "../../test/sharedMutationLock.js";
+import type * as OpenAIShimModule from "./openaiShim.js";
 
 type FetchType = typeof globalThis.fetch;
 const originalFetch = globalThis.fetch;
+let createOpenAIShimClient: typeof OpenAIShimModule.createOpenAIShimClient;
 
 const originalEnv = {
     OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
@@ -19,17 +20,6 @@ const mockState = {
     enabled: true,
     effectiveWindow: 100_000, // Copilot gpt-4o tier
 };
-
-mock.module("../../utils/config.js", () => ({
-    getGlobalConfig: () => ({
-        toolHistoryCompressionEnabled: mockState.enabled,
-        autoCompactEnabled: false,
-    }),
-}));
-
-mock.module("../compact/autoCompact.js", () => ({
-    getEffectiveContextWindowSize: () => mockState.effectiveWindow,
-}));
 
 type OpenAIShimClient = {
     beta: {
@@ -106,10 +96,26 @@ beforeEach(async () => {
     delete process.env.OPENAI_MODEL;
     mockState.enabled = true;
     mockState.effectiveWindow = 100_000;
+
+    mock.module("../../utils/config.js", () => ({
+        getGlobalConfig: () => ({
+            toolHistoryCompressionEnabled: mockState.enabled,
+            autoCompactEnabled: false,
+        }),
+    }));
+
+    mock.module("../compact/autoCompact.js", () => ({
+        getEffectiveContextWindowSize: () => mockState.effectiveWindow,
+    }));
+
+    ({ createOpenAIShimClient } = await import(
+        `./openaiShim.js?compression=${Date.now()}-${Math.random()}`
+    ));
 });
 
 afterEach(() => {
     try {
+        mock.restore();
         if (originalEnv.OPENAI_BASE_URL === undefined)
             delete process.env.OPENAI_BASE_URL;
         else process.env.OPENAI_BASE_URL = originalEnv.OPENAI_BASE_URL;

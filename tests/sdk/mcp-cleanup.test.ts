@@ -1,20 +1,28 @@
-import { describe, test, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'bun:test'
+import { describe, test, expect, vi, beforeEach, afterEach } from 'bun:test'
 import { unstable_v2_createSession } from '../../src/entrypoints/sdk/index.js'
 import { query } from '../../src/entrypoints/sdk/index.js'
 import type { MCPServerConnection } from '../../src/services/mcp/types.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../src/test/sharedMutationLock.js'
 
 // sendMessage drains trigger init(), which checks auth. Stub it for CI.
 const AUTH_KEY = 'ANTHROPIC_API_KEY'
-let savedApiKey: string | undefined
+const originalApiKey = process.env[AUTH_KEY]
 
-beforeAll(() => {
-  savedApiKey = process.env[AUTH_KEY]
-  if (!savedApiKey) process.env[AUTH_KEY] = 'sk-test-mcp-cleanup-stub'
+beforeEach(async () => {
+  await acquireSharedMutationLock('tests/sdk/mcp-cleanup.test.ts')
+  process.env[AUTH_KEY] = originalApiKey ?? 'sk-test-mcp-cleanup-stub'
 })
 
-afterAll(() => {
-  if (savedApiKey === undefined) delete process.env[AUTH_KEY]
-  else process.env[AUTH_KEY] = savedApiKey
+afterEach(() => {
+  try {
+    if (originalApiKey === undefined) delete process.env[AUTH_KEY]
+    else process.env[AUTH_KEY] = originalApiKey
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 describe('MCP cleanup on session close', () => {

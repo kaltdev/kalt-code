@@ -1,25 +1,17 @@
 import { PassThrough } from 'node:stream'
 
-import { afterEach, expect, mock, test as bunTest } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test as bunTest } from 'bun:test'
 import React from 'react'
 import stripAnsi from 'strip-ansi'
 
 import { createRoot, Text, useTheme } from '../ink.js'
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js'
 import { AppStateProvider } from '../state/AppState.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../test/sharedMutationLock.js'
 import { ThemeProvider } from './design-system/ThemeProvider.js'
-
-mock.module('./StructuredDiff.js', () => ({
-  StructuredDiff: function StructuredDiffPreview(): React.ReactNode {
-    const [theme] = useTheme()
-    return <Text>{`Preview theme: ${theme}`}</Text>
-  },
-}))
-
-mock.module('./StructuredDiff/colorDiff.js', () => ({
-  getColorModuleUnavailableReason: () => 'env',
-  getSyntaxTheme: () => null,
-}))
 
 const SYNC_START = '\x1B[?2026h'
 const SYNC_END = '\x1B[?2026l'
@@ -124,8 +116,27 @@ async function waitForFrame(
   return frame
 }
 
+beforeEach(async () => {
+  await acquireSharedMutationLock('components/ThemePicker.test.tsx')
+  mock.module('./StructuredDiff.js', () => ({
+    StructuredDiff: function StructuredDiffPreview(): React.ReactNode {
+      const [theme] = useTheme()
+      return <Text>{`Preview theme: ${theme}`}</Text>
+    },
+  }))
+
+  mock.module('./StructuredDiff/colorDiff.js', () => ({
+    getColorModuleUnavailableReason: () => 'env',
+    getSyntaxTheme: () => null,
+  }))
+})
+
 afterEach(() => {
-  mock.restore()
+  try {
+    mock.restore()
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 test('updates the preview when keyboard focus moves to another theme', async () => {

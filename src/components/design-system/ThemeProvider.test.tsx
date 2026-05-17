@@ -18,7 +18,7 @@
  */
 import { PassThrough } from 'node:stream'
 
-import { afterEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import React, { useEffect } from 'react'
 import stripAnsi from 'strip-ansi'
 
@@ -26,16 +26,11 @@ import { createRoot, Text, useTheme } from '../../ink.js'
 import { KeybindingSetup } from '../../keybindings/KeybindingProviderSetup.js'
 import { AppStateProvider } from '../../state/AppState.js'
 import { ThemeProvider, usePreviewTheme } from './ThemeProvider.js'
-
-mock.module('../StructuredDiff.js', () => ({
-  StructuredDiff: function StructuredDiffPreview(): React.ReactNode {
-    return <Text>diff</Text>
-  },
-}))
-mock.module('../StructuredDiff/colorDiff.js', () => ({
-  getColorModuleUnavailableReason: () => 'env',
-  getSyntaxTheme: () => null,
-}))
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../test/sharedMutationLock.js'
+import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
 
 const SYNC_START = '\x1B[?2026h'
 const SYNC_END = '\x1B[?2026l'
@@ -98,8 +93,44 @@ async function waitForFrame(
   return frame
 }
 
+let hadOriginalTheme = false
+let originalTheme: ReturnType<typeof getGlobalConfig>['theme']
+
+beforeEach(async () => {
+  await acquireSharedMutationLock('components/design-system/ThemeProvider.test.tsx')
+  const config = getGlobalConfig()
+  hadOriginalTheme = Object.prototype.hasOwnProperty.call(config, 'theme')
+  originalTheme = config.theme
+
+  mock.module('../StructuredDiff.js', () => ({
+    StructuredDiff: function StructuredDiffPreview(): React.ReactNode {
+      return <Text>diff</Text>
+    },
+  }))
+  mock.module('../StructuredDiff/colorDiff.js', () => ({
+    getColorModuleUnavailableReason: () => 'env',
+    getSyntaxTheme: () => null,
+  }))
+})
+
 afterEach(() => {
-  mock.restore()
+  try {
+    try {
+      mock.restore()
+    } finally {
+      saveGlobalConfig(current => {
+        const next = { ...current }
+        if (hadOriginalTheme) {
+          next.theme = originalTheme
+        } else {
+          delete next.theme
+        }
+        return next
+      })
+    }
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 /**

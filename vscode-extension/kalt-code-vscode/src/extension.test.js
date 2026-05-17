@@ -1,5 +1,9 @@
 const assert = require('node:assert/strict');
-const { mock, test } = require('bun:test');
+const { afterEach, beforeEach, mock, test } = require('bun:test');
+const {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} = require('../../../src/test/sharedMutationLock.js');
 
 function createStatus(overrides = {}) {
   return {
@@ -26,9 +30,13 @@ function createStatus(overrides = {}) {
   };
 }
 
-function loadExtension() {
+function clearExtensionCache() {
   const extensionPath = require.resolve('./extension');
   delete require.cache[extensionPath];
+}
+
+function loadExtension() {
+  clearExtensionCache();
   const vscodeMock = {
     workspace: {
       workspaceFolders: [],
@@ -71,6 +79,21 @@ function loadExtension() {
 
   return require('./extension');
 }
+
+beforeEach(async () => {
+  await acquireSharedMutationLock('vscode-extension/kalt-code-vscode/src/extension.test.js');
+  mock.restore();
+  clearExtensionCache();
+});
+
+afterEach(() => {
+  try {
+    mock.restore();
+    clearExtensionCache();
+  } finally {
+    releaseSharedMutationLock();
+  }
+});
 
 test('renderControlCenterHtml uses the Kalt Code wordmark, status rail, and warm action hierarchy', () => {
   const { renderControlCenterHtml } = loadExtension();

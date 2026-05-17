@@ -47,14 +47,26 @@ describe("SQLite Masterpiece: Edge Cases & Multi-Project Isolation", () => {
     afterEach(() => {
         try {
             resetGlobalGraph();
-            if (originalConfigDir === undefined) {
-                delete process.env.CLAUDE_CONFIG_DIR;
-            } else {
-                process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
-            }
-            rmSync(rootTestDir, { recursive: true, force: true });
         } finally {
-            releaseSharedMutationLock();
+            try {
+                if (originalConfigDir === undefined) {
+                    delete process.env.CLAUDE_CONFIG_DIR;
+                } else {
+                    process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
+                }
+            } finally {
+                const dirToRemove = rootTestDir;
+                rootTestDir = "";
+                project1Dir = "";
+                project2Dir = "";
+                try {
+                    if (dirToRemove) {
+                        rmSync(dirToRemove, { recursive: true, force: true });
+                    }
+                } finally {
+                    releaseSharedMutationLock();
+                }
+            }
         }
     });
 

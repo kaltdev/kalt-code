@@ -15,6 +15,10 @@ import {
 import { readJSONLFile } from '../../src/utils/json.js'
 import { sanitizePath } from '../../src/utils/sessionStoragePortable.js'
 import { getClaudeConfigHomeDir } from '../../src/utils/envUtils.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../src/test/sharedMutationLock.js'
 
 const originalKaltCodeConfigDir = process.env.KALTCODE_CONFIG_DIR
 const originalClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR
@@ -31,24 +35,36 @@ function getTestProjectDir(projectDir: string): string {
   return join(testConfigDir, 'projects', sanitizePath(projectDir))
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await acquireSharedMutationLock('tests/sdk/session-functions.test.ts')
   testConfigDir = mkdtempSync(join(tmpdir(), 'sdk-session-functions-config-'))
   applyTestConfigDir()
 })
 
 afterEach(() => {
-  if (originalKaltCodeConfigDir === undefined) {
-    delete process.env.KALTCODE_CONFIG_DIR
-  } else {
-    process.env.KALTCODE_CONFIG_DIR = originalKaltCodeConfigDir
+  try {
+    if (originalKaltCodeConfigDir === undefined) {
+      delete process.env.KALTCODE_CONFIG_DIR
+    } else {
+      process.env.KALTCODE_CONFIG_DIR = originalKaltCodeConfigDir
+    }
+    if (originalClaudeConfigDir === undefined) {
+      delete process.env.CLAUDE_CONFIG_DIR
+    } else {
+      process.env.CLAUDE_CONFIG_DIR = originalClaudeConfigDir
+    }
+    clearConfigHomeDirCache()
+  } finally {
+    const dirToRemove = testConfigDir
+    testConfigDir = ''
+    try {
+      if (dirToRemove) {
+        rmSync(dirToRemove, { recursive: true, force: true })
+      }
+    } finally {
+      releaseSharedMutationLock()
+    }
   }
-  if (originalClaudeConfigDir === undefined) {
-    delete process.env.CLAUDE_CONFIG_DIR
-  } else {
-    process.env.CLAUDE_CONFIG_DIR = originalClaudeConfigDir
-  }
-  clearConfigHomeDirCache()
-  rmSync(testConfigDir, { recursive: true, force: true })
 })
 
 function clearConfigHomeDirCache(): void {

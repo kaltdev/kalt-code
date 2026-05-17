@@ -71,23 +71,33 @@ beforeEach(async () => {
 afterEach(() => {
     try {
         mock.restore();
-        globalThis.fetch = originalFetch;
-        rmSync(tempDir, { recursive: true, force: true });
-        restoreEnvValue("CLAUDE_CONFIG_DIR");
-        restoreEnvValue("OPENROUTER_API_KEY");
-        restoreEnvValue("OPENAI_BASE_URL");
-        restoreEnvValue("OPENAI_API_BASE");
-        restoreEnvValue("OPENAI_MODEL");
-        restoreEnvValue("CLAUDE_CODE_USE_OPENAI");
-        restoreEnvValue("CLAUDE_CODE_USE_GEMINI");
-        restoreEnvValue("CLAUDE_CODE_USE_MISTRAL");
-        restoreEnvValue("CLAUDE_CODE_USE_GITHUB");
-        restoreEnvValue("CLAUDE_CODE_USE_BEDROCK");
-        restoreEnvValue("CLAUDE_CODE_USE_VERTEX");
-        restoreEnvValue("CLAUDE_CODE_USE_FOUNDRY");
-        restoreEnvValue("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC");
     } finally {
-        releaseSharedMutationLock();
+        try {
+            globalThis.fetch = originalFetch;
+            restoreEnvValue("CLAUDE_CONFIG_DIR");
+            restoreEnvValue("OPENROUTER_API_KEY");
+            restoreEnvValue("OPENAI_BASE_URL");
+            restoreEnvValue("OPENAI_API_BASE");
+            restoreEnvValue("OPENAI_MODEL");
+            restoreEnvValue("CLAUDE_CODE_USE_OPENAI");
+            restoreEnvValue("CLAUDE_CODE_USE_GEMINI");
+            restoreEnvValue("CLAUDE_CODE_USE_MISTRAL");
+            restoreEnvValue("CLAUDE_CODE_USE_GITHUB");
+            restoreEnvValue("CLAUDE_CODE_USE_BEDROCK");
+            restoreEnvValue("CLAUDE_CODE_USE_VERTEX");
+            restoreEnvValue("CLAUDE_CODE_USE_FOUNDRY");
+            restoreEnvValue("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC");
+        } finally {
+            const dirToRemove = tempDir;
+            tempDir = "";
+            try {
+                if (dirToRemove) {
+                    rmSync(dirToRemove, { recursive: true, force: true });
+                }
+            } finally {
+                releaseSharedMutationLock();
+            }
+        }
     }
 });
 

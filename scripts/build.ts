@@ -8,6 +8,7 @@
  * - src/ path aliases
  */
 
+import type { BunPlugin, Loader } from "bun";
 import { readFileSync } from "fs";
 import { noTelemetryPlugin } from "./no-telemetry-plugin";
 import { CLI_EXTERNALS, SDK_EXTERNALS } from "./externals.js";
@@ -65,6 +66,43 @@ const enabledFeatures = Object.entries(featureFlags)
     .filter(([, enabled]) => enabled)
     .map(([name]) => name);
 
+function applyFeatureFlagTransforms(source: string): string {
+    return source;
+}
+
+const noTelemetryStubPathPattern = new RegExp(
+    [
+        "utils[/\\\\]autoUpdater",
+        "utils[/\\\\]plugins[/\\\\]fetchTelemetry",
+        "components[/\\\\]FeedbackSurvey[/\\\\]submitTranscriptShare",
+        "services[/\\\\]internalLogging",
+        "services[/\\\\]api[/\\\\]dumpPrompts",
+        "utils[/\\\\]undercover",
+        "types[/\\\\]generated[/\\\\]events_mono[/\\\\]claude_code[/\\\\]v1[/\\\\]claude_code_internal_event",
+        "types[/\\\\]generated[/\\\\]events_mono[/\\\\]growthbook[/\\\\]v1[/\\\\]growthbook_experiment_event",
+        "types[/\\\\]generated[/\\\\]events_mono[/\\\\]common[/\\\\]v1[/\\\\]auth",
+        "types[/\\\\]generated[/\\\\]google[/\\\\]protobuf[/\\\\]timestamp",
+    ]
+        .map((path) => `(?:^|[/\\\\])${path}\\.ts$`)
+        .join("|"),
+);
+
+const featureFlagPreprocessPlugin: BunPlugin = {
+    name: "feature-flag-preprocessor",
+    setup(build) {
+        build.onLoad({ filter: /\.tsx?$/ }, async ({ path }) => {
+            if (noTelemetryStubPathPattern.test(path)) {
+                return undefined;
+            }
+
+            const source = await Bun.file(path).text();
+            const transformed = applyFeatureFlagTransforms(source);
+            const loader: Loader = path.endsWith(".tsx") ? "tsx" : "ts";
+            return { contents: transformed, loader };
+        });
+    },
+};
+
 let result: Awaited<ReturnType<typeof Bun.build>> | undefined;
 let sdkResult: Awaited<ReturnType<typeof Bun.build>> | undefined;
 
@@ -96,6 +134,7 @@ result = await Bun.build({
             "MACRO.NATIVE_PACKAGE_URL": "undefined",
         },
         plugins: [
+            featureFlagPreprocessPlugin,
             noTelemetryPlugin,
             {
                 name: "bun-bundle-shim",
@@ -479,6 +518,7 @@ sdkResult = await Bun.build({
         // External: everything TUI-related + native modules
         external: SDK_EXTERNALS,
         plugins: [
+            featureFlagPreprocessPlugin,
             noTelemetryPlugin,
             // Stub missing internal/optional modules (same pattern as CLI build)
             {

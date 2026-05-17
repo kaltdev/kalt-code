@@ -41,24 +41,34 @@ describe.serial('KnowledgeGraph Phase 1 Stress & Edge Cases', () => {
     try {
       resetGlobalGraph()
       clearMemoryOnly()
-      if (originalKaltCodeConfigDir === undefined) {
-        delete process.env.KALTCODE_CONFIG_DIR
-      } else {
-        process.env.KALTCODE_CONFIG_DIR = originalKaltCodeConfigDir
-      }
-      if (originalConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
-      } else {
-        process.env.CLAUDE_CONFIG_DIR = originalConfigDir
-      }
-      if (originalOrama === undefined) {
-        delete process.env.KALTCODE_KNOWLEDGE_ORAMA
-      } else {
-        process.env.KALTCODE_KNOWLEDGE_ORAMA = originalOrama
-      }
-      rmSync(configDir, { recursive: true, force: true })
     } finally {
-      releaseSharedMutationLock()
+      try {
+        if (originalKaltCodeConfigDir === undefined) {
+          delete process.env.KALTCODE_CONFIG_DIR
+        } else {
+          process.env.KALTCODE_CONFIG_DIR = originalKaltCodeConfigDir
+        }
+        if (originalConfigDir === undefined) {
+          delete process.env.CLAUDE_CONFIG_DIR
+        } else {
+          process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+        }
+        if (originalOrama === undefined) {
+          delete process.env.KALTCODE_KNOWLEDGE_ORAMA
+        } else {
+          process.env.KALTCODE_KNOWLEDGE_ORAMA = originalOrama
+        }
+      } finally {
+        const dirToRemove = configDir
+        configDir = ''
+        try {
+          if (dirToRemove) {
+            rmSync(dirToRemove, { recursive: true, force: true })
+          }
+        } finally {
+          releaseSharedMutationLock()
+        }
+      }
     }
   })
 

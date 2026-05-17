@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
 
 import { saveGlobalConfig } from "../config.js";
+import {
+    acquireSharedMutationLock,
+    releaseSharedMutationLock,
+} from "../../test/sharedMutationLock.js";
 
 async function importFreshModelModule() {
     mock.restore();
@@ -62,7 +66,8 @@ function restoreEnv(key: keyof typeof SAVED_ENV): void {
     }
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+    await acquireSharedMutationLock("src/utils/model/model.openai-shim-providers.test.ts");
     // Other test files (notably modelOptions.github.test.ts) install a
     // persistent mock.module for './providers.js' that overrides getAPIProvider
     // globally. Without mock.restore() here, those overrides bleed into this
@@ -89,14 +94,20 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    mock.restore();
-    for (const key of Object.keys(SAVED_ENV) as Array<keyof typeof SAVED_ENV>) {
-        restoreEnv(key);
+    try {
+        mock.restore();
+        for (const key of Object.keys(SAVED_ENV) as Array<
+            keyof typeof SAVED_ENV
+        >) {
+            restoreEnv(key);
+        }
+        saveGlobalConfig((current) => ({
+            ...current,
+            model: undefined,
+        }));
+    } finally {
+        releaseSharedMutationLock();
     }
-    saveGlobalConfig((current) => ({
-        ...current,
-        model: undefined,
-    }));
 });
 
 test("codex provider reads OPENAI_MODEL, not stale settings.model", async () => {

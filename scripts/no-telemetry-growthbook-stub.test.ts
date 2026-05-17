@@ -1,40 +1,65 @@
-import { afterAll, beforeEach, describe, expect, test } from "bun:test";
-import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import {
+    acquireSharedMutationLock,
+    releaseSharedMutationLock,
+} from "../src/test/sharedMutationLock.js";
 
 // ---------------------------------------------------------------------------
 // Setup: dynamically import the source-level growthbook no-op stub.
 // The stub reads ~/.claude/feature-flags.json for local flag overrides.
 // ---------------------------------------------------------------------------
 
-const testDir = join(tmpdir(), `growthbook-stub-test-${process.pid}`);
-const flagsFile = join(testDir, "test-flags.json");
-
-mkdirSync(testDir, { recursive: true });
-
-// Point the stub at our test flags file before import
-process.env.CLAUDE_FEATURE_FLAGS_FILE = flagsFile;
+const originalFeatureFlagsFile = process.env.CLAUDE_FEATURE_FLAGS_FILE;
+let testDir = "";
+let flagsFile = "";
 
 const stub = await import("../src/services/analytics/growthbook.js");
+
+function restoreFeatureFlagsEnv(): void {
+    if (originalFeatureFlagsFile === undefined) {
+        delete process.env.CLAUDE_FEATURE_FLAGS_FILE;
+    } else {
+        process.env.CLAUDE_FEATURE_FLAGS_FILE = originalFeatureFlagsFile;
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 describe("growthbook stub — local feature flag overrides", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        await acquireSharedMutationLock(
+            "scripts/no-telemetry-growthbook-stub.test.ts",
+        );
+        testDir = mkdtempSync(join(tmpdir(), "growthbook-stub-test-"));
+        flagsFile = join(testDir, "test-flags.json");
+        process.env.CLAUDE_FEATURE_FLAGS_FILE = flagsFile;
         stub.resetGrowthBook();
-        try {
-            unlinkSync(flagsFile);
-        } catch {
-            /* may not exist */
-        }
     });
 
-    afterAll(() => {
-        rmSync(testDir, { recursive: true, force: true });
-        delete process.env.CLAUDE_FEATURE_FLAGS_FILE;
+    afterEach(() => {
+        try {
+            stub.resetGrowthBook();
+        } finally {
+            try {
+                restoreFeatureFlagsEnv();
+            } finally {
+                const dirToRemove = testDir;
+                testDir = "";
+                flagsFile = "";
+                try {
+                    if (dirToRemove) {
+                        rmSync(dirToRemove, { recursive: true, force: true });
+                    }
+                } finally {
+                    releaseSharedMutationLock();
+                }
+            }
+        }
     });
 
     // ── File absent ──────────────────────────────────────────────────
