@@ -777,27 +777,32 @@ export function getGlobalGraphSummary(): string {
     return summary;
 }
 
+function resetBackend(name: string, reset: () => boolean): boolean {
+    try {
+        return reset();
+    } catch (error) {
+        console.warn(`Failed to reset knowledge graph ${name} backend:`, error);
+        return false;
+    }
+}
+
 export function resetGlobalGraph(): void {
     const cwd = getFsImplementation().cwd();
     const { sqlite, json } = getProviders();
 
     const projectDir = join(getProjectsDir(), sanitizePath(cwd));
-    const sqliteReset = sqlite.reset();
-    const jsonReset = sqliteReset ? json.reset() : false;
-
     const oramaPath = getOramaPersistencePath(cwd);
-    if (sqliteReset && jsonReset) {
-        try {
-            rmSync(oramaPath, { force: true });
-        } catch (error) {
-            console.warn(
-                `Failed to delete Orama persistence at ${oramaPath}:`,
-                error,
-            );
-        }
-    } else {
+
+    const sqliteReset = resetBackend("SQLite", () => sqlite.reset());
+    const jsonReset = resetBackend("JSON", () => json.reset());
+    const oramaReset = resetBackend("Orama", () => {
+        rmSync(oramaPath, { force: true });
+        return true;
+    });
+
+    if (!sqliteReset || !jsonReset || !oramaReset) {
         console.warn(
-            `Knowledge graph reset preserved persistent state for ${projectDir} because one backend could not be cleared.`,
+            `Knowledge graph reset encountered cleanup failures for ${projectDir}.`,
         );
     }
 

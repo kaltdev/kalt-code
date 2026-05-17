@@ -45,8 +45,19 @@ export class SQLiteProvider {
             // Dynamic import to prevent Node.js from failing during bundle load
             const { Database } = await import("bun:sqlite");
 
-            if (existsSync(this.dbPath) && statSync(this.dbPath).size === 0) {
-                unlinkSync(this.dbPath);
+            try {
+                if (
+                    existsSync(this.dbPath) &&
+                    statSync(this.dbPath).size === 0
+                ) {
+                    unlinkSync(this.dbPath);
+                }
+            } catch (error) {
+                console.warn(
+                    `Failed to inspect SQLite database at ${this.dbPath}:`,
+                    error,
+                );
+                this.removeDatabaseFiles();
             }
 
             this.db = new Database(this.dbPath);
@@ -75,8 +86,8 @@ export class SQLiteProvider {
         ];
 
         for (const file of sidecars) {
-            if (!existsSync(file)) continue;
             try {
+                if (!existsSync(file)) continue;
                 unlinkSync(file);
             } catch (error) {
                 ok = false;
@@ -89,7 +100,14 @@ export class SQLiteProvider {
 
     private async selfHeal(): Promise<void> {
         try {
-            this.close();
+            try {
+                this.close();
+            } catch (error) {
+                console.warn(
+                    `Failed to close SQLite database at ${this.dbPath}:`,
+                    error,
+                );
+            }
             // Clean up main DB and side-car files to prevent reattaching to stale WAL/SHM
             this.removeDatabaseFiles();
 
@@ -426,7 +444,16 @@ export class SQLiteProvider {
     }
 
     public reset(): boolean {
-        this.close();
-        return this.removeDatabaseFiles();
+        let ok = true;
+        try {
+            this.close();
+        } catch (error) {
+            ok = false;
+            console.warn(
+                `Failed to close SQLite database at ${this.dbPath}:`,
+                error,
+            );
+        }
+        return this.removeDatabaseFiles() && ok;
     }
 }
