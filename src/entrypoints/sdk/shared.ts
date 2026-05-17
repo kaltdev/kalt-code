@@ -52,8 +52,19 @@ export function assertValidSessionId(sessionId: string): void {
  * }
  * ```
  */
-const envMutationQueue: Array<() => void> = []
-let envMutationLocked = false
+type EnvMutexCallback = () => void
+
+type EnvMutexState = {
+  queue: EnvMutexCallback[]
+  locked: boolean
+}
+
+function createEnvMutexState(): EnvMutexState {
+  return {
+    queue: [],
+    locked: false,
+  }
+}
 
 export interface MutexAcquireOptions {
   /** Maximum time to wait for mutex in milliseconds. Default: no timeout (wait forever). */
@@ -67,31 +78,34 @@ export interface MutexAcquireResult {
   reason?: 'timeout'
 }
 
-export async function acquireEnvMutex(options?: MutexAcquireOptions): Promise<MutexAcquireResult> {
-  if (!envMutationLocked) {
-    envMutationLocked = true
+async function acquireEnvMutexFromState(
+  state: EnvMutexState,
+  options?: MutexAcquireOptions,
+): Promise<MutexAcquireResult> {
+  if (!state.locked) {
+    state.locked = true
     return { acquired: true }
   }
 
   if (options?.timeoutMs === undefined) {
     // No timeout - wait forever (original behavior for backward compatibility)
     return new Promise(resolve => {
-      envMutationQueue.push(() => resolve({ acquired: true }))
+      state.queue.push(() => resolve({ acquired: true }))
     })
   }
 
   // With timeout - race between queue and timeout
   return new Promise(resolve => {
     let resolved = false
-    let callback: () => void
+    let callback: EnvMutexCallback
 
     const timeoutId = setTimeout(() => {
       if (!resolved) {
         resolved = true
         // Remove ourselves from the queue to prevent orphaned callback
-        const index = envMutationQueue.indexOf(callback)
+        const index = state.queue.indexOf(callback)
         if (index !== -1) {
-          envMutationQueue.splice(index, 1)
+          state.queue.splice(index, 1)
         }
         resolve({ acquired: false, reason: 'timeout' })
       }
@@ -105,13 +119,13 @@ export async function acquireEnvMutex(options?: MutexAcquireOptions): Promise<Mu
       }
     }
 
-    envMutationQueue.push(callback)
+    state.queue.push(callback)
   })
 }
 
-export function releaseEnvMutex(): void {
-  if (envMutationQueue.length > 0) {
-    const next = envMutationQueue.shift()
+function releaseEnvMutexFromState(state: EnvMutexState): void {
+  if (state.queue.length > 0) {
+    const next = state.queue.shift()
     if (next) {
       try {
         next()
@@ -119,12 +133,27 @@ export function releaseEnvMutex(): void {
         // If callback throws, ensure mutex is unlocked so next caller can acquire
         // The error is intentionally not propagated - callback errors should not
         // block the mutex system. Callers should handle their own errors.
-        envMutationLocked = false
+        state.locked = false
       }
     }
   } else {
-    envMutationLocked = false
+    state.locked = false
   }
+}
+
+function resetEnvMutexStateForTesting(state: EnvMutexState): void {
+  state.queue.length = 0
+  state.locked = false
+}
+
+const globalEnvMutexState = createEnvMutexState()
+
+export async function acquireEnvMutex(options?: MutexAcquireOptions): Promise<MutexAcquireResult> {
+  return acquireEnvMutexFromState(globalEnvMutexState, options)
+}
+
+export function releaseEnvMutex(): void {
+  releaseEnvMutexFromState(globalEnvMutexState)
 }
 
 /**
@@ -133,8 +162,18 @@ export function releaseEnvMutex(): void {
  * @internal
  */
 export function resetEnvMutexForTesting(): void {
-  envMutationQueue.length = 0
-  envMutationLocked = false
+  resetEnvMutexStateForTesting(globalEnvMutexState)
+}
+
+export function createEnvMutexForTesting(): {
+  acquireEnvMutex: (options?: MutexAcquireOptions) => Promise<MutexAcquireResult>
+  releaseEnvMutex: () => void
+} {
+  const state = createEnvMutexState()
+  return {
+    acquireEnvMutex: options => acquireEnvMutexFromState(state, options),
+    releaseEnvMutex: () => releaseEnvMutexFromState(state),
+  }
 }
 
 // ============================================================================

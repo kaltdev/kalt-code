@@ -1,10 +1,8 @@
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
+import { describe, test, expect } from 'bun:test'
 import {
   assertValidSessionId,
   mapMessageToSDK,
-  acquireEnvMutex,
-  releaseEnvMutex,
-  resetEnvMutexForTesting,
+  createEnvMutexForTesting,
 } from '../../src/entrypoints/sdk/shared.js'
 
 describe('assertValidSessionId', () => {
@@ -82,70 +80,73 @@ describe('mapMessageToSDK', () => {
   })
 })
 
-describe.serial('env mutex timeout', () => {
-  beforeEach(() => {
-    resetEnvMutexForTesting()
-  })
-
-  afterEach(() => {
-    resetEnvMutexForTesting()
-  })
-
+describe('env mutex timeout', () => {
   test('acquireEnvMutex returns timeout result when mutex is locked', async () => {
+    const envMutex = createEnvMutexForTesting()
+
     // First acquire locks the mutex
-    const firstResult = await acquireEnvMutex()
+    const firstResult = await envMutex.acquireEnvMutex()
     expect(firstResult.acquired).toBe(true)
 
     // Second acquire with timeout should return timeout result
-    const secondResult = await acquireEnvMutex({ timeoutMs: 100 })
+    const secondResult = await envMutex.acquireEnvMutex({ timeoutMs: 100 })
     expect(secondResult.acquired).toBe(false)
     expect(secondResult.reason).toBe('timeout')
 
     // Clean up
-    releaseEnvMutex()
+    envMutex.releaseEnvMutex()
   })
 
   test('acquireEnvMutex succeeds before timeout', async () => {
-    await acquireEnvMutex()
+    const envMutex = createEnvMutexForTesting()
+
+    const firstResult = await envMutex.acquireEnvMutex()
+    expect(firstResult.acquired).toBe(true)
 
     // Release after 50ms
-    setTimeout(releaseEnvMutex, 50)
+    setTimeout(envMutex.releaseEnvMutex, 50)
 
     // Second acquire with 200ms timeout should succeed
-    const result = await acquireEnvMutex({ timeoutMs: 200 })
+    const result = await envMutex.acquireEnvMutex({ timeoutMs: 200 })
     expect(result.acquired).toBe(true)
 
-    releaseEnvMutex()
+    envMutex.releaseEnvMutex()
   })
 
   test('acquireEnvMutex without timeout waits indefinitely (default behavior)', async () => {
-    await acquireEnvMutex()
+    const envMutex = createEnvMutexForTesting()
+
+    const firstResult = await envMutex.acquireEnvMutex()
+    expect(firstResult.acquired).toBe(true)
 
     // Release after short delay
-    setTimeout(releaseEnvMutex, 50)
+    setTimeout(envMutex.releaseEnvMutex, 50)
 
     // No timeout option - should wait and succeed
-    const result = await acquireEnvMutex()
+    const result = await envMutex.acquireEnvMutex()
     expect(result.acquired).toBe(true)
 
-    releaseEnvMutex()
+    envMutex.releaseEnvMutex()
   })
 
   test('mutex remains functional after timeout', async () => {
+    const envMutex = createEnvMutexForTesting()
+
     // First acquire locks it
-    await acquireEnvMutex()
+    const firstResult = await envMutex.acquireEnvMutex()
+    expect(firstResult.acquired).toBe(true)
 
     // Second acquire with timeout fails
-    const result2 = await acquireEnvMutex({ timeoutMs: 50 })
+    const result2 = await envMutex.acquireEnvMutex({ timeoutMs: 50 })
     expect(result2.acquired).toBe(false)
 
     // Release the first
-    releaseEnvMutex()
+    envMutex.releaseEnvMutex()
 
     // Third acquire should succeed (mutex not permanently locked)
-    const result3 = await acquireEnvMutex({ timeoutMs: 100 })
+    const result3 = await envMutex.acquireEnvMutex({ timeoutMs: 100 })
     expect(result3.acquired).toBe(true)
 
-    releaseEnvMutex()
+    envMutex.releaseEnvMutex()
   })
 })
