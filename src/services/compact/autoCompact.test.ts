@@ -1,8 +1,30 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../test/sharedMutationLock.js'
 import {
   getEffectiveContextWindowSize,
   getAutoCompactThreshold,
 } from './autoCompact.ts'
+
+const originalClaudeCodeUseOpenAI = process.env.CLAUDE_CODE_USE_OPENAI
+
+beforeEach(async () => {
+  await acquireSharedMutationLock('autoCompact.test.ts')
+})
+
+afterEach(() => {
+  try {
+    if (originalClaudeCodeUseOpenAI === undefined) {
+      delete process.env.CLAUDE_CODE_USE_OPENAI
+    } else {
+      process.env.CLAUDE_CODE_USE_OPENAI = originalClaudeCodeUseOpenAI
+    }
+  } finally {
+    releaseSharedMutationLock()
+  }
+})
 
 describe('getEffectiveContextWindowSize', () => {
   test('returns positive value for known models with large context windows', () => {

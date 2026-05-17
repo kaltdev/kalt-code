@@ -3,10 +3,14 @@
  * conversationRecovery so Bun's mock.module can replace sessionStart before
  * that module is first loaded.
  */
-import { afterEach, expect, mock, test as bunTest } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test as bunTest } from 'bun:test'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../test/sharedMutationLock.js'
 
 const tempDirs: string[] = []
 const originalEnv = { ...process.env }
@@ -20,6 +24,28 @@ function test(
 ): ReturnType<typeof bunTest> {
   return bunTest.serial(name, fn, CONVERSATION_RECOVERY_HOOKS_TEST_TIMEOUT_MS)
 }
+
+function restoreEnv(): void {
+  for (const key of Object.keys(process.env)) {
+    if (!(key in originalEnv)) {
+      delete process.env[key]
+    }
+  }
+
+  for (const [key, value] of Object.entries(originalEnv)) {
+    if (value === undefined) {
+      delete process.env[key]
+    } else {
+      process.env[key] = value
+    }
+  }
+}
+
+beforeEach(async () => {
+  await acquireSharedMutationLock(
+    'src/utils/conversationRecovery.hooks.test.ts',
+  )
+})
 
 function id(n: number): string {
   return `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
@@ -53,12 +79,13 @@ async function writeJsonl(entry: unknown): Promise<string> {
 }
 
 afterEach(async () => {
-  mock.restore()
-  mock.module('./model/providers.js', () => ({
-    getAPIProvider: () => 'firstParty',
-  }))
-  process.env = { ...originalEnv }
-  await Promise.all(tempDirs.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
+  try {
+    mock.restore()
+    restoreEnv()
+    await Promise.all(tempDirs.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 test('loadConversationForResume rejects oversized transcripts before resume hooks run', async () => {

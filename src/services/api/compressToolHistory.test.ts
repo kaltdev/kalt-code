@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
-import { compressToolHistory, getTiers } from './compressToolHistory.js'
+import type * as CompressToolHistoryModule from './compressToolHistory.js'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../test/sharedMutationLock.js'
+
+let compressToolHistory: typeof CompressToolHistoryModule.compressToolHistory
+let getTiers: typeof CompressToolHistoryModule.getTiers
 
 // Mock the two dependencies so tests are deterministic and don't read disk config.
 const mockState = {
@@ -7,24 +14,34 @@ const mockState = {
   effectiveWindow: 100_000,
 }
 
-mock.module('../../utils/config.js', () => ({
-  getGlobalConfig: () => ({
-    toolHistoryCompressionEnabled: mockState.enabled,
-  }),
-}))
-
-mock.module('../compact/autoCompact.js', () => ({
-  getEffectiveContextWindowSize: () => mockState.effectiveWindow,
-}))
-
-beforeEach(() => {
+beforeEach(async () => {
+  await acquireSharedMutationLock('compressToolHistory.test.ts')
   mockState.enabled = true
   mockState.effectiveWindow = 100_000
+
+  mock.module('../../utils/config.js', () => ({
+    getGlobalConfig: () => ({
+      toolHistoryCompressionEnabled: mockState.enabled,
+    }),
+  }))
+
+  mock.module('../compact/autoCompact.js', () => ({
+    getEffectiveContextWindowSize: () => mockState.effectiveWindow,
+  }))
+
+  ;({ compressToolHistory, getTiers } = await import(
+    `./compressToolHistory.js?ts=${Date.now()}-${Math.random()}`
+  ))
 })
 
 afterEach(() => {
-  mockState.enabled = true
-  mockState.effectiveWindow = 100_000
+  try {
+    mock.restore()
+    mockState.enabled = true
+    mockState.effectiveWindow = 100_000
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 type Block = Record<string, unknown>

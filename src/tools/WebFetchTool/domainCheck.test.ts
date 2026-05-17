@@ -1,20 +1,49 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import axios from 'axios'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../../test/sharedMutationLock.js'
 
-const originalEnv = { ...process.env }
+const originalAxiosGet = axios.get
+const originalEnv = {
+  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
+  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+}
+
+function restoreEnv(key: keyof typeof originalEnv): void {
+  const value = originalEnv[key]
+  if (value === undefined) {
+    delete process.env[key]
+  } else {
+    process.env[key] = value
+  }
+}
 
 async function importFreshModule() {
   mock.restore()
   return import(`./utils.ts?ts=${Date.now()}-${Math.random()}`)
 }
 
-beforeEach(() => {
-  process.env = { ...originalEnv }
+beforeEach(async () => {
+  await acquireSharedMutationLock('WebFetchTool/domainCheck.test.ts')
+  restoreEnv('CLAUDE_CODE_USE_OPENAI')
+  restoreEnv('CLAUDE_CODE_USE_GEMINI')
+  restoreEnv('CLAUDE_CODE_USE_GITHUB')
+  axios.get = originalAxiosGet
 })
 
 afterEach(() => {
-  process.env = { ...originalEnv }
-  mock.restore()
+  try {
+    mock.restore()
+    restoreEnv('CLAUDE_CODE_USE_OPENAI')
+    restoreEnv('CLAUDE_CODE_USE_GEMINI')
+    restoreEnv('CLAUDE_CODE_USE_GITHUB')
+    axios.get = originalAxiosGet
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 describe('checkDomainBlocklist', () => {

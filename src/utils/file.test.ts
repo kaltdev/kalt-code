@@ -1,4 +1,8 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../test/sharedMutationLock.js'
 
 async function importFileModuleWithKillswitchEnabled(
   killswitchEnabled: boolean,
@@ -10,8 +14,16 @@ async function importFileModuleWithKillswitchEnabled(
   return import(`./file.js?ts=${Date.now()}-${Math.random()}`)
 }
 
+beforeEach(async () => {
+  await acquireSharedMutationLock('src/utils/file.test.ts')
+})
+
 afterEach(() => {
-  mock.restore()
+  try {
+    mock.restore()
+  } finally {
+    releaseSharedMutationLock()
+  }
 })
 
 describe('addLineNumbers', () => {

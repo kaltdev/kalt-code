@@ -1,7 +1,11 @@
-import { afterEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import {
+  acquireSharedMutationLock,
+  releaseSharedMutationLock,
+} from '../test/sharedMutationLock.js'
 
 const tempDirs: string[] = []
 const originalSimple = process.env.CLAUDE_CODE_SIMPLE
@@ -27,6 +31,9 @@ const originalProviderEnv = Object.fromEntries(
 const sessionId = '00000000-0000-4000-8000-000000001999'
 const ts = '2026-04-02T00:00:00.000Z'
 
+beforeEach(async () => {
+  await acquireSharedMutationLock('src/utils/conversationRecovery.test.ts')
+})
 
 function id(n: number): string {
   return `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
@@ -60,17 +67,25 @@ async function writeJsonl(entry: unknown): Promise<string> {
 }
 
 afterEach(async () => {
-  mock.restore()
-  process.env.CLAUDE_CODE_SIMPLE = originalSimple
-  for (const key of providerEnvKeys) {
-    const value = originalProviderEnv[key]
-    if (value === undefined) {
-      delete process.env[key]
+  try {
+    mock.restore()
+    if (originalSimple === undefined) {
+      delete process.env.CLAUDE_CODE_SIMPLE
     } else {
-      process.env[key] = value
+      process.env.CLAUDE_CODE_SIMPLE = originalSimple
     }
+    for (const key of providerEnvKeys) {
+      const value = originalProviderEnv[key]
+      if (value === undefined) {
+        delete process.env[key]
+      } else {
+        process.env[key] = value
+      }
+    }
+    await Promise.all(tempDirs.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
+  } finally {
+    releaseSharedMutationLock()
   }
-  await Promise.all(tempDirs.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
 })
 
 async function importFreshConversationRecovery() {
