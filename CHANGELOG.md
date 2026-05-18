@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.14.0](https://github.com/kaltdev/kaltcode/compare/v0.13.0...v0.14.0) (2026-05-18)
+
+
+### Features
+
+* Add codexplan alias and update spinner tips ([a69cd8b](https://github.com/kaltdev/kaltcode/commit/a69cd8b179351a982e8d780348141d7590156d81))
+* **query:** Add tool failure loop guard ([7b1e8fc](https://github.com/kaltdev/kaltcode/commit/7b1e8fc2eea6410aa6895a29f931a3133ddcb7ca))
+
+
+### Bug Fixes
+
+* **ui:** Remove overflowX from TaskListV2 ([218a365](https://github.com/kaltdev/kaltcode/commit/218a365270e25e32e49869175e9e76ff30878e28))
+
 ## [0.13.0](https://github.com/kaltdev/kaltcode/compare/v0.12.0...v0.13.0) (2026-05-17)
 
 
